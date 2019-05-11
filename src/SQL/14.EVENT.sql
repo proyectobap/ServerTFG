@@ -1,0 +1,17 @@
+CREATE TABLE IF NOT EXISTS `Event` (
+  `event_id` INT(8) ZEROFILL NOT NULL,
+  `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `ticket_id` INT(8) ZEROFILL NOT NULL,
+  `event_type` INT(1) UNSIGNED NOT NULL,
+  PRIMARY KEY (`event_id`),
+  CONSTRAINT `FK1`
+    FOREIGN KEY (`ticket_id`)
+    REFERENCES `Ticket` (`ticket_id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+  CONSTRAINT `FK2`
+    FOREIGN KEY (`event_type`)
+    REFERENCES `EventType` (`event_type_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = INNODB;
