@@ -8,10 +8,11 @@ import org.json.JSONObject;
 public class AccesoSQL {
 	
 	private static final String SURL = "jdbc:mysql://localhost/produccion_db";
-    private static final String USU = "root";
+    private static final String USU = "pedro";
     private static final String PASS = "oxgnub";
     
     private static Map<String, String> commands = null;
+    private JSONArray content;
     
     private Connection con;
     private PreparedStatement ps;
@@ -48,17 +49,20 @@ public class AccesoSQL {
     
     /*************************************************************************************/
     
-    public JSONArray help() {
+    public JSONObject help() {
     	
-    	return new JSONArray().put(commands);
-    	    	
+    	content = new JSONArray();
+    	content.put(commands);
+    	return JsonTreatment.sendResponseCode(201, content);
     }
     
     /*************************************************************************************/
     
-    public boolean login(String username, String password) throws SQLException {
+    public JSONObject login(String username, String password) throws SQLException {
 
-    	String query = "SELECT * FROM login WHERE login_name LIKE '?'";
+    	String query = "SELECT * FROM Login WHERE login_name LIKE '?'";
+    	
+    	JSONObject response = new JSONObject();
     	
     	ps = con.prepareStatement(query);
     	ps.setString(1, username);
@@ -66,32 +70,67 @@ public class AccesoSQL {
     	rs = ps.executeQuery();
     	while (rs.next()) {
     		if (password.equals(rs.getString(1))) {
-    			return true;
+    			response.put("response", 200);
+    			response.put("content", "token");
+    			return response;
     		}
     	}
-    	return false;
+    	
+    	response.put("response", 400);
+		response.put("content", "Ningún usuario coincide con esas credenciales");
+    	return response;
     }
     
     /*************************************************************************************/
     
     public JSONObject loginList() throws SQLException {
 
-    	String query = "SELECT * FROM user";
-    	JSONObject login = new JSONObject();
-    	ps = con.prepareStatement(query);
+    	content = new JSONArray();
     	
+    	String query = "SELECT * FROM User";
+    	ps = con.prepareStatement(query);
     	rs = ps.executeQuery();
+    	
     	while (rs.next()) {
-    		login.put("response", 200);
-    		login.put("id", rs.getInt(1));
-    		login.put("email", rs.getString(2));
-    		login.put("name", rs.getString(3));
-    		login.put("last_name", rs.getString(4));
-    		login.put("user_type", rs.getInt(5));
+    		JSONObject responseB = new JSONObject();
+    		responseB.put("id", rs.getInt(1));
+    		responseB.put("email", rs.getString(2));
+    		responseB.put("name", rs.getString(3));
+    		responseB.put("last_name", rs.getString(4));
+    		responseB.put("user_type", rs.getInt(5));
+    		content.put(responseB);
     	}
-    	return login;
+    	return JsonTreatment.sendResponseCode(200, content);
     }
     
     /*************************************************************************************/
+    
+    public JSONObject newTicket(JSONObject batch) throws SQLException {
+
+    	String query = "INSERT INTO 'produccion_db'.'Ticket' ('desc', 'ticket_status_id', 'ticket_owner', 'ticket_object') VALUES (?,?,?,?);";
+    	JSONObject response = new JSONObject();
+    	ps = con.prepareStatement(query);
+    	
+    	ps.setString(1, batch.getString("description"));
+        ps.setInt(2, batch.getInt("status"));
+        ps.setInt(3, batch.getInt("owner"));
+        ps.setInt(4, batch.getInt("object"));
+        // Falta añadir la vinculación de los técnicos asignados.
+    	int result = ps.executeUpdate();
+    	
+    	if (result == 1) {
+    		response.put("response", 200);
+    		response.put("content", "Se han añadido "+ result +" lineas a la base de datos");
+    		return response;
+    	} else {
+    		response.put("response", 400);
+    		response.put("content", "Se han añadido "+ result +" lineas a la base de datos");
+    		return response;
+    	}
+    	
+    }
+    
+    /*************************************************************************************/
+    
 
 }

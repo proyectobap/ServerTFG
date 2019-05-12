@@ -39,7 +39,6 @@ public class ClientListener implements Runnable {
     
     private String preguntaEnc;
     private JSONObject pregunta;
-    private JSONObject respuesta;
     
     private ObjectInputStream entrada = null;
     private ObjectOutputStream salida = null;
@@ -117,19 +116,20 @@ public class ClientListener implements Runnable {
 				
 				preguntaEnc = (String) entrada.readObject();
 				pregunta = new JSONObject(symetricDecript(preguntaEnc));
-				respuesta = new JSONObject();
 				
 				switch (pregunta.getString("peticion").toLowerCase()) {
+				
 				case "login":
-					enviar(symetricEncrypt(acceso.loginList().toString()));
+					enviar(symetricEncrypt(acceso.loginList()));
 					break;
 				case "exit":
 					running = false;
 					continue;
+				case "help":
+					enviar(symetricEncrypt(acceso.help()));
+					break;
 				default:
-					respuesta.put("response", 400);
-					respuesta.put("content", "Comando no encontrado");
-					enviar(symetricEncrypt(respuesta.toString()));
+					enviar(symetricEncrypt(JsonTreatment.nullResponse()));
 					break;
 				}
 				
@@ -153,7 +153,7 @@ public class ClientListener implements Runnable {
 				| InvalidAlgorithmParameterException e) {
 			
 			System.err.println(e.getMessage());
-			e.printStackTrace();
+			System.out.println(e.getCause());
 			try {
 				entrada.close();
 	    		salida.close();
@@ -230,13 +230,13 @@ public class ClientListener implements Runnable {
     
 /**********************************************************************************/
 	
-    private String symetricEncrypt(String mensaje) throws InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException { 
+    private String symetricEncrypt(JSONObject json) throws InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException { 
     	byte[] iv = new byte[12];
     	EncryptModule.getSecureRandom().nextBytes(iv);
     	parameterSpec = new GCMParameterSpec(128, iv);
     	cifradorSimetrico.init(Cipher.ENCRYPT_MODE, claveSimetricaSecreta, parameterSpec);
     	
-    	byte[] cipherText = cifradorSimetrico.doFinal(mensaje.getBytes());
+    	byte[] cipherText = cifradorSimetrico.doFinal(json.toString().getBytes());
     	ByteBuffer bf = ByteBuffer.allocate(4+iv.length+cipherText.length); 
 		bf.putInt(iv.length);
 		bf.put(iv);
