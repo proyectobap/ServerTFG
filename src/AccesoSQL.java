@@ -1,5 +1,8 @@
 import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class AccesoSQL {
@@ -8,6 +11,8 @@ public class AccesoSQL {
     private static final String USU = "root";
     private static final String PASS = "oxgnub";
     
+    private static Map<String, String> commands = null;
+    
     private Connection con;
     private PreparedStatement ps;
     private ResultSet rs;
@@ -15,6 +20,14 @@ public class AccesoSQL {
     /*************************************************************************************/
     
     public AccesoSQL() throws SQLException {
+    	
+    	if (commands == null) {
+    		commands = new HashMap<>();
+    		
+    		commands.put("help", "Muestra la lista de comandos");
+    		commands.put("login (usuario, contraseña)", "Intenta proceso de login con credenciales");
+    	}
+    	
     	con = DriverManager.getConnection(SURL, USU, PASS);
     	if (con.isClosed()) System.out.println("Error en la conexion");
     	else System.out.println("Conexion Exitosa");
@@ -31,6 +44,14 @@ public class AccesoSQL {
     		System.out.println("No se pudo cerrar la conexion");
     		return false;
     	}
+    }
+    
+    /*************************************************************************************/
+    
+    public JSONArray help() {
+    	
+    	return new JSONArray().put(commands);
+    	    	
     }
     
     /*************************************************************************************/

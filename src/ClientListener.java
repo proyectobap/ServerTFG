@@ -93,7 +93,7 @@ public class ClientListener implements Runnable {
                     new Random().nextBytes(testString);
                     String test = new String(Base64.getEncoder().encode(testString));
                     String encTest = asymetricEncrypt(test);
-                    // Seguir por aqui
+
                     System.out.println("Comprobación de comunicación...");
                     System.out.println(test);
                     
