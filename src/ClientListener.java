@@ -70,7 +70,7 @@ public class ClientListener implements Runnable {
 
 	@Override
 	public void run() {
-		System.out.println("Estableciendo comunicación con " + clientSocket.getRemoteSocketAddress().toString());
+		System.out.print("O");
 		
 		try {
 			
@@ -93,16 +93,12 @@ public class ClientListener implements Runnable {
                     String test = new String(Base64.getEncoder().encode(testString));
                     String encTest = asymetricEncrypt(test);
 
-                    System.out.println("Comprobación de comunicación...");
-                    System.out.println(test);
-                    
                     enviar(encTest);
                     
                     String check = asymetricDecript((String) entrada.readObject());
-                    System.out.println(check);
                     
                     if (test.equals(check)) {
-                        System.out.println("Comunicación OK");
+                        System.out.println("O)");
                         enviarResponse(206);
                         enviar(new String(Base64.getEncoder().encode(claveSimetrica)));
                     } else {
@@ -139,6 +135,7 @@ public class ClientListener implements Runnable {
 			entrada.close();
     		salida.close();
     		clientSocket.close();
+    		acceso.closeConnection();
 			
 		} catch (IOException 
 				| ClassNotFoundException 
@@ -168,7 +165,6 @@ public class ClientListener implements Runnable {
     		
 		} finally {
 			System.out.println("Cliente "+clientSocket.getRemoteSocketAddress().toString()+" desconectado.");
-			Principal.shutdown();
 		}
 		
 	}
@@ -189,19 +185,17 @@ public class ClientListener implements Runnable {
     			IOException, 
     			ClassNotFoundException {
 
-		System.out.print("Recibiendo clave publica del servidor... ");
 		BigInteger moduloPublico = (BigInteger) entrada.readObject();
 		BigInteger exponentePublico = (BigInteger) entrada.readObject();
 		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 		clientPublicKey = keyFactory.generatePublic(new RSAPublicKeySpec(moduloPublico,exponentePublico));
-		System.out.println("OK");
+		System.out.print("O");
 		
-		System.out.print("Enviando clave publica propia... ");
 		salida.writeObject(EncryptModule.getModulus());
         salida.flush();
         salida.writeObject(EncryptModule.getExponent());
         salida.flush();
-		System.out.println("OK");
+        System.out.print("O");
 	}
 	
 	/******************************************************************************/

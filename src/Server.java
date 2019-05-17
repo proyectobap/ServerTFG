@@ -18,7 +18,8 @@ public class Server extends Thread {
 			
 			while (true) {
 				Socket conexionCliente = servidor.accept();
-				System.out.println("Comunicación entrante");
+				System.out.print(conexionCliente.getRemoteSocketAddress());
+				System.out.print(" (");
 				ClientListener listener = new ClientListener(conexionCliente);
 			}
 			

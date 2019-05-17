@@ -30,8 +30,8 @@ public class AccesoSQL {
     	}
     	
     	con = DriverManager.getConnection(SURL, USU, PASS);
-    	if (con.isClosed()) System.out.println("Error en la conexion");
-    	else System.out.println("Conexion Exitosa");
+    	if (con.isClosed()) System.out.println("X");
+    	else System.out.print("O");
     }
     
     /*************************************************************************************/
