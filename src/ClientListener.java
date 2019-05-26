@@ -118,6 +118,9 @@ public class ClientListener implements Runnable {
 				case "login":
 					enviar(symetricEncrypt(acceso.loginList()));
 					break;
+				case "newticket":
+					enviar(symetricEncrypt(acceso.newTicket(pregunta)));
+					break;
 				case "exit":
 					running = false;
 					continue;

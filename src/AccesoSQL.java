@@ -27,6 +27,7 @@ public class AccesoSQL {
     		
     		commands.put("help", "Muestra la lista de comandos");
     		commands.put("login (usuario, contraseña)", "Intenta proceso de login con credenciales");
+    		commands.put("newticket (title,description,owner,)", "Intenta proceso de login con credenciales");
     	}
     	
     	con = DriverManager.getConnection(SURL, USU, PASS);
@@ -107,30 +108,35 @@ public class AccesoSQL {
     
     public JSONObject newTicket(JSONObject batch) throws SQLException {
 
-    	String query = "INSERT INTO 'produccion_db'.'Ticket' ('desc', 'ticket_status_id', 'ticket_owner', 'ticket_object') VALUES (?,?,?,?);";
-    	JSONObject response = new JSONObject();
+    	String query = "INSERT INTO Ticket (`title`, `desc`, `ticket_status_id`, `ticket_owner`, `ticket_object`) VALUES (?,?,?,?,?);";
+    	
     	ps = con.prepareStatement(query);
     	
-    	ps.setString(1, batch.getString("description"));
-        ps.setInt(2, batch.getInt("status"));
-        ps.setInt(3, batch.getInt("owner"));
-        ps.setInt(4, batch.getInt("object"));
+    	ps.setString(1, batch.getString("title"));
+    	ps.setString(2, batch.getString("description"));
+        ps.setInt(3, batch.getInt("status"));
+        ps.setInt(4, batch.getInt("owner"));
+        ps.setInt(5, batch.getInt("object"));
         // Falta añadir la vinculación de los técnicos asignados.
     	int result = ps.executeUpdate();
     	
     	if (result == 1) {
-    		response.put("response", 200);
-    		response.put("content", "Se han añadido "+ result +" lineas a la base de datos");
-    		return response;
+    		return JsonTreatment.sendResponseCode(200, "Se han añadido "+ result +" lineas a la base de datos");
     	} else {
-    		response.put("response", 400);
-    		response.put("content", "Se han añadido "+ result +" lineas a la base de datos");
-    		return response;
+    		return JsonTreatment.sendResponseCode(400, "Se han añadido "+ result +" lineas a la base de datos");
     	}
     	
     }
     
     /*************************************************************************************/
+    
+    /*public JSONObject newUser(JSONObject batch) throws SQLException {
+    	
+    	String query = "INSERT INTO `User` (`email`, `name`, `last_name`, `user_type`) VALUES ('kaienu.jp@gmail.com', 'pedro', 'muñoz', 4);"; 
+    	
+    }
+    
+    //*/
     
 
 }

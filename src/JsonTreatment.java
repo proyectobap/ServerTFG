@@ -12,6 +12,21 @@ public class JsonTreatment {
 		return response;
 	}
 	
+	public static JSONObject sendResponseCode(int code, String resp) {
+		JSONObject response = new JSONObject();
+		
+		JSONObject answer = new JSONObject();
+		JSONArray content = new JSONArray();
+		
+		answer.put("answer", resp);
+		content.put(answer);
+		
+		response.put("response", code);
+		response.put("content", content);
+		
+		return response;
+	}
+	
 	public static JSONObject nullResponse() {
 		JSONObject response = new JSONObject();
 		JSONArray content = new JSONArray();
