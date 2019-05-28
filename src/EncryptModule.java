@@ -32,7 +32,7 @@ public class EncryptModule {
 		System.out.println();
 		System.out.println();
 		
-		 secureRandom = new SecureRandom();
+		secureRandom = new SecureRandom();
 		
 	}
 	

@@ -30,7 +30,6 @@ import org.json.JSONObject;
 public class ClientListener implements Runnable {
 	
 	private final Thread hilo;
-    private static int numConexion = 0;
     private final Socket clientSocket;
     private boolean running;
     private boolean pruebaConexion;
@@ -52,7 +51,6 @@ public class ClientListener implements Runnable {
     private GCMParameterSpec parameterSpec;
     
     public ClientListener(Socket cliente) {
-        numConexion++;
         
         try {
 			acceso = new AccesoSQL();
@@ -63,7 +61,7 @@ public class ClientListener implements Runnable {
         
         running = true;
         pruebaConexion = true;
-        hilo = new Thread(this, "Conexion "+numConexion);
+        hilo = new Thread(this, "Cliente "+cliente.getRemoteSocketAddress());
         this.clientSocket = cliente;
         hilo.start();
     }
@@ -98,11 +96,12 @@ public class ClientListener implements Runnable {
                     String check = asymetricDecript((String) entrada.readObject());
                     
                     if (test.equals(check)) {
-                        System.out.println("O)");
+                        System.out.println("O)"+Consola.RESET);
                         enviarResponse(206);
+                        Consola.message(hilo.getName() + " conectado");
                         enviar(new String(Base64.getEncoder().encode(claveSimetrica)));
                     } else {
-                        System.err.println("Comunicación falló");
+                    	System.out.println(Consola.RED+"X"+Consola.YELLOW+")"+Consola.RESET);
                         enviarResponse(400);
                         System.exit(0);
                     }
@@ -117,15 +116,22 @@ public class ClientListener implements Runnable {
 				
 				case "login":
 					enviar(symetricEncrypt(acceso.loginList()));
+					Consola.info(hilo.getName() + " -> login");
 					break;
 				case "newticket":
 					enviar(symetricEncrypt(acceso.newTicket(pregunta)));
+					Consola.info(hilo.getName() + " -> Crear Ticket");
+					break;
+				case "listticket":
+					enviar(symetricEncrypt(acceso.listarTickets()));
+					Consola.info(hilo.getName() + " -> Listado Tickets");
 					break;
 				case "exit":
 					running = false;
 					continue;
 				case "help":
 					enviar(symetricEncrypt(acceso.help()));
+					Consola.info(hilo.getName() + " -> Comando ayuda");
 					break;
 				default:
 					enviar(symetricEncrypt(JsonTreatment.nullResponse()));
@@ -139,6 +145,7 @@ public class ClientListener implements Runnable {
     		salida.close();
     		clientSocket.close();
     		acceso.closeConnection();
+    		Consola.event(hilo.getName() + " desconectado.");
 			
 		} catch (IOException 
 				| ClassNotFoundException 
@@ -152,8 +159,8 @@ public class ClientListener implements Runnable {
 				| JSONException 
 				| InvalidAlgorithmParameterException e) {
 			
-			System.err.println(e.getMessage());
-			System.out.println(e.getCause());
+			Consola.error(hilo.getName() + " se desconectó con el error \""+e.getMessage()+"\"");
+			
 			try {
 				entrada.close();
 	    		salida.close();
@@ -166,8 +173,6 @@ public class ClientListener implements Runnable {
 				exc.printStackTrace();
 			}
     		
-		} finally {
-			System.out.println("Cliente "+clientSocket.getRemoteSocketAddress().toString()+" desconectado.");
 		}
 		
 	}

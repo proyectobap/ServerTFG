@@ -7,8 +7,8 @@ public class Server extends Thread {
 	@SuppressWarnings({ "unused", "resource" })
 	@Override
 	public void run() {
-		System.out.println("BACK-END SERVER");
-		System.out.println("---------------");
+		System.out.println("BACK-END SERVER 0.4");
+		System.out.println("-------------------");
 		
 		try {
 			
@@ -18,7 +18,8 @@ public class Server extends Thread {
 			
 			while (true) {
 				Socket conexionCliente = servidor.accept();
-				System.out.print(conexionCliente.getRemoteSocketAddress());
+				System.out.print(Consola.date() + " - ");
+				System.out.print(Consola.YELLOW+"Cliente "+conexionCliente.getRemoteSocketAddress());
 				System.out.print(" (");
 				ClientListener listener = new ClientListener(conexionCliente);
 			}

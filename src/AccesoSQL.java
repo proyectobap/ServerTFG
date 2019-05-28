@@ -25,13 +25,14 @@ public class AccesoSQL {
     	if (commands == null) {
     		commands = new HashMap<>();
     		
-    		commands.put("help", "Muestra la lista de comandos");
-    		commands.put("login (usuario, contraseña)", "Intenta proceso de login con credenciales");
-    		commands.put("newticket (title,description,owner,)", "Intenta proceso de login con credenciales");
+    		commands.put("help", "Muestra la lista de comandos (Debug)");
+    		commands.put("login", "muestra lista de usuarios (Debug)");
+    		commands.put("newTicket (title,description,status,owner,object)", "Inserta un nuevo Ticket");
+    		commands.put("listTicket", "Muestra todos los Tickets");
     	}
     	
     	con = DriverManager.getConnection(SURL, USU, PASS);
-    	if (con.isClosed()) System.out.println("X");
+    	if (con.isClosed()) System.out.println(Consola.RED+"X"+Consola.RESET);
     	else System.out.print("O");
     }
     
@@ -40,10 +41,10 @@ public class AccesoSQL {
     public boolean closeConnection() throws SQLException {
     	con.close();
     	if (con.isClosed()) {
-    		System.out.println("Conexion cerrada");
+    		//System.out.println("Conexion cerrada");
     		return true;
     	} else {
-    		System.out.println("No se pudo cerrar la conexion");
+    		//System.out.println("No se pudo cerrar la conexion");
     		return false;
     	}
     }
@@ -99,6 +100,33 @@ public class AccesoSQL {
     		responseB.put("name", rs.getString(3));
     		responseB.put("last_name", rs.getString(4));
     		responseB.put("user_type", rs.getInt(5));
+    		content.put(responseB);
+    	}
+    	return JsonTreatment.sendResponseCode(200, content);
+    }
+    
+/*************************************************************************************/
+    
+    public JSONObject listarTickets() throws SQLException {
+
+    	content = new JSONArray();
+    	
+    	String query = "SELECT * FROM Ticket";
+    	ps = con.prepareStatement(query);
+    	rs = ps.executeQuery();
+    	
+    	while (rs.next()) {
+    		JSONObject responseB = new JSONObject();
+    		responseB.put("id", rs.getInt(1));
+    		responseB.put("start_date", rs.getDate(2));
+    		responseB.put("end_date", rs.getDate(3));
+    		responseB.put("mod_date", rs.getDate(4));
+    		responseB.put("creation_date", rs.getDate(5));
+    		responseB.put("title", rs.getString(6));
+    		responseB.put("desc", rs.getString(7));
+    		responseB.put("ticket_status", rs.getInt(8));
+    		responseB.put("ticket_owner", rs.getInt(9));
+    		responseB.put("ticket_object", rs.getInt(10));
     		content.put(responseB);
     	}
     	return JsonTreatment.sendResponseCode(200, content);
