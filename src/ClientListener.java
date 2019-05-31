@@ -122,6 +122,22 @@ public class ClientListener implements Runnable {
 					enviar(symetricEncrypt(acceso.newTicket(pregunta)));
 					Consola.info(hilo.getName() + " -> Crear Ticket");
 					break;
+				case "listticketstatus":
+					enviar(symetricEncrypt(acceso.list(2)));
+					Consola.info(hilo.getName() + " -> Listado Estado de Tickets");
+					break;
+				case "listusertype":
+					enviar(symetricEncrypt(acceso.list(3)));
+					Consola.info(hilo.getName() + " -> Listado Tipos de Usuario");
+					break;
+				case "listeventtype":
+					enviar(symetricEncrypt(acceso.list(1)));
+					Consola.info(hilo.getName() + " -> Listado Tipos de Eventos");
+					break;
+				case "listelementtype":
+					enviar(symetricEncrypt(acceso.list(0)));
+					Consola.info(hilo.getName() + " -> Listado Tipos de Elementos");
+					break;
 				case "listticket":
 					enviar(symetricEncrypt(acceso.listarTickets()));
 					Consola.info(hilo.getName() + " -> Listado Tickets");
