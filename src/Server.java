@@ -7,7 +7,7 @@ public class Server extends Thread {
 	@SuppressWarnings({ "unused", "resource" })
 	@Override
 	public void run() {
-		System.out.println("BACK-END SERVER 0.4.1 (31/05)");
+		System.out.println("BACK-END SERVER 0.4.1.1 (31/05)");
 		System.out.println("-------------------");
 		
 		try {
