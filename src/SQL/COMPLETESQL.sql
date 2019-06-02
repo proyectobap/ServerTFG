@@ -25,7 +25,6 @@ CREATE TABLE IF NOT EXISTS `Login` (
   `login_id` INT(8) ZEROFILL NOT NULL AUTO_INCREMENT,
   `login_name` VARCHAR(15) NOT NULL,
   `shdw_passwd` VARCHAR(45) NOT NULL,
-  `photo` MEDIUMBLOB NULL,
   `create_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `user_id` INT(8) ZEROFILL NOT NULL,
   PRIMARY KEY (`login_id`, `user_id`),
@@ -39,8 +38,7 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `Token` (
   `login_id` INT(8) ZEROFILL NOT NULL,
   `token_hash` VARCHAR(32) NOT NULL,
-  `last_petition` TIMESTAMP NOT NULL,
-  `active` BIT(1) NOT NULL DEFAULT 0,
+  `access_time` TIMESTAMP NOT NULL,
   PRIMARY KEY (`login_id`),
   CONSTRAINT `login`
     FOREIGN KEY (`login_id`)

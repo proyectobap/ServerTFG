@@ -15,23 +15,23 @@ public class Consola {
 	private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"); 
 	
 	public static void info(String texto) {
-		System.out.println(LocalDateTime.now().format(formatter) + " - " + texto);
+		System.out.println(date() + " - " + texto);
 	}
 	
 	public static void error(String texto) {
-		System.out.println(LocalDateTime.now().format(formatter) + " - " + RED + texto + RESET);
+		System.out.println(date() + " - " + RED + texto + RESET);
 	}
 	
 	public static void message(String texto) {
-		System.out.println(LocalDateTime.now().format(formatter) + " - " + GREEN + texto + RESET);
+		System.out.println(date() + " - " + GREEN + texto + RESET);
 	}
 	
 	public static void event(String texto) {
-		System.out.println(LocalDateTime.now().format(formatter) + " - " + PURPLE + texto + RESET);
+		System.out.println(date() + " - " + PURPLE + texto + RESET);
 	}
 	
 	public static String date() {
-		return LocalDateTime.now().format(formatter);
+		return RESET + LocalDateTime.now().format(formatter);
 	}
 	
 }

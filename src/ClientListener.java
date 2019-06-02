@@ -32,7 +32,6 @@ public class ClientListener implements Runnable {
 	private final Thread hilo;
     private final Socket clientSocket;
     private boolean running;
-    private boolean pruebaConexion;
     
     private AccesoSQL acceso;
     
@@ -52,71 +51,126 @@ public class ClientListener implements Runnable {
     
     public ClientListener(Socket cliente) {
         
+    	acceso = new AccesoSQL();
+    	
+    	this.clientSocket = cliente;
+    	hilo = new Thread(this, "Cliente "+clientSocket.getRemoteSocketAddress());
+    	
+    	System.out.print(" - [SQL:");
+    	
         try {
-			acceso = new AccesoSQL();
+			if (acceso.connect()) {
+				System.out.print(Consola.GREEN+"OK"+Consola.RESET+"]");
+				
+				running = true;
+		        hilo.start();
+				
+			} else {
+				System.out.println(Consola.RED+"FAIL"+Consola.RESET+"]");
+				running = true;
+		        hilo.start();
+				//clientSocket.close();
+			}
 		} catch (SQLException e) {
-			System.err.println("Error al conectar con la BBDD");
-			System.err.println(e.getMessage());
+			System.out.println(Consola.RED+"FAIL"+Consola.RESET+"] -> "+e.getMessage());
+			running = true;
+	        hilo.start();
 		}
         
-        running = true;
-        pruebaConexion = true;
-        hilo = new Thread(this, "Cliente "+cliente.getRemoteSocketAddress());
-        this.clientSocket = cliente;
-        hilo.start();
     }
 
 	@Override
 	public void run() {
-		System.out.print("O");
 		
 		try {
 			
+			System.out.print(" - [SOCK:");
+			
 			entrada = new ObjectInputStream(clientSocket.getInputStream());
 			salida = new ObjectOutputStream(clientSocket.getOutputStream());
-
-			intercambioClaves();
 			
-			inicializacionClaveSimetrica();
+			System.out.print(Consola.GREEN+"OK"+Consola.RESET+"]");
+
+		} catch (Exception e) {
+			
+			System.out.println(Consola.RED+"FAIL"+Consola.RESET+"] -> "+e.getMessage());
+			
+		}
+		
+		try {
+			
+			System.out.print(" - [ICA:");
+			intercambioClaves();
 			
 			cifradorAsimetrico = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 			cifradorSimetrico = Cipher.getInstance("AES/GCM/NoPadding");
-            			
-			while (running) {
-				
-				if (pruebaConexion) {
-					
-				    byte[] testString = new byte[7];
-                    new Random().nextBytes(testString);
-                    String test = new String(Base64.getEncoder().encode(testString));
-                    String encTest = asymetricEncrypt(test);
+			
+			byte[] testString = new byte[7];
+            new Random().nextBytes(testString);
+            String test = new String(Base64.getEncoder().encode(testString));
+            String encTest = asymetricEncrypt(test);
 
-                    enviar(encTest);
-                    
-                    String check = asymetricDecript((String) entrada.readObject());
-                    
-                    if (test.equals(check)) {
-                        System.out.println("O)"+Consola.RESET);
-                        enviarResponse(206);
-                        Consola.message(hilo.getName() + " conectado");
-                        enviar(new String(Base64.getEncoder().encode(claveSimetrica)));
-                    } else {
-                    	System.out.println(Consola.RED+"X"+Consola.YELLOW+")"+Consola.RESET);
-                        enviarResponse(400);
-                        System.exit(0);
-                    }
-                    
-                    pruebaConexion = false;
-					}
+            enviar(encTest);
+            
+            String check = asymetricDecript((String) entrada.readObject());
+            
+            if (test.equals(check)) {
+            	System.out.print(Consola.GREEN+"OK"+Consola.RESET+"]");
+                enviarResponse(206);
+            } else {
+            	System.out.println(Consola.RED+"FAIL"+Consola.RESET+"]");
+                enviarResponse(400);
+            }
+			
+		} catch (Exception e) {
+			
+			System.out.println(Consola.RED+"FAIL"+Consola.RESET+"] -> "+e.getMessage());
+			
+		}
+		
+		try {
+			
+			System.out.print(" - [ICS:");
+			inicializacionClaveSimetrica();
+			enviar(new String(Base64.getEncoder().encode(claveSimetrica)));
+			System.out.print(Consola.GREEN+"OK"+Consola.RESET+"]");
+			
+		} catch (Exception e) {
+		
+			System.out.println(Consola.RED+"FAIL"+Consola.RESET+"] -> "+e.getMessage());
+			
+		}
+			
+		
+		try {
+			
+			System.out.print(" - [LOG:");
+			
+			String[] credentials = (symetricDecript((String) entrada.readObject())).trim().split(",");
+			
+			JSONObject resp = acceso.login(credentials);
+			
+			enviar(symetricEncrypt(resp));
+			
+			if (resp.getInt("response") == 400) {
+				running = false;
+				System.out.println(Consola.RED+"FAIL"+Consola.RESET+"]");
+			} else {
+				System.out.println(Consola.GREEN+"OK"+Consola.RESET+"]");
+				Consola.message(hilo.getName() + " conectado");
+			}
+
+	
+			while (running) {
 				
 				preguntaEnc = (String) entrada.readObject();
 				pregunta = new JSONObject(symetricDecript(preguntaEnc));
 				
 				switch (pregunta.getString("peticion").toLowerCase()) {
 				
-				case "login":
+				case "testlogin":
 					enviar(symetricEncrypt(acceso.loginList()));
-					Consola.info(hilo.getName() + " -> login");
+					Consola.info(hilo.getName() + " -> TestLogin");
 					break;
 				case "newticket":
 					enviar(symetricEncrypt(acceso.newTicket(pregunta)));
@@ -169,10 +223,7 @@ public class ClientListener implements Runnable {
 			
 		} catch (IOException 
 				| ClassNotFoundException 
-				| NoSuchAlgorithmException 
-				| InvalidKeySpecException 
 				| InvalidKeyException 
-				| NoSuchPaddingException 
 				| IllegalBlockSizeException 
 				| BadPaddingException 
 				| SQLException 
@@ -212,18 +263,16 @@ public class ClientListener implements Runnable {
     			NoSuchAlgorithmException, 
     			IOException, 
     			ClassNotFoundException {
-
+		
 		BigInteger moduloPublico = (BigInteger) entrada.readObject();
 		BigInteger exponentePublico = (BigInteger) entrada.readObject();
 		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 		clientPublicKey = keyFactory.generatePublic(new RSAPublicKeySpec(moduloPublico,exponentePublico));
-		System.out.print("O");
 		
 		salida.writeObject(EncryptModule.getModulus());
         salida.flush();
         salida.writeObject(EncryptModule.getExponent());
         salida.flush();
-        System.out.print("O");
 	}
 	
 	/******************************************************************************/
@@ -299,6 +348,22 @@ public class ClientListener implements Runnable {
     private void enviarResponse(int response) throws IOException {
         salida.writeInt(response);
         salida.flush();
+    }
+    
+    /******************************************************************************/
+    
+    public void killThread() {
+    	try {
+    		salida.close();
+    	} catch (Exception e) {}
+    	
+    	try {
+    		entrada.close();
+    	} catch (Exception e) {}
+		
+		try {
+			clientSocket.close();
+		} catch (Exception e) {}
     }
 	
 }

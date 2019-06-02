@@ -18,27 +18,33 @@ public class AccesoSQL {
     
     /*************************************************************************************/
     
-    public AccesoSQL() throws SQLException {
-    	
+    public AccesoSQL() {
     	if (commands == null) {
     		commands = new JSONArray();
     		// Debug
     		commands.put(new JSONObject().put("help", "Muestra la lista de comandos (Debug)"));
-    		commands.put(new JSONObject().put("login", "muestra lista de usuarios (Debug)"));
+    		commands.put(new JSONObject().put("testlogin", "muestra lista de usuarios (Debug)"));
     		// Create
     		commands.put(new JSONObject().put("newTicket (title,description,status,owner,object)", "Inserta un nuevo Ticket"));
-    		commands.put(new JSONObject().put("newUser (`email, name, last_name, user_type)", "Inserta un nuevo Usuario"));
+    		commands.put(new JSONObject().put("newUser (email, name, last_name, user_type)", "Inserta un nuevo Usuario"));
     		// List
     		commands.put(new JSONObject().put("listTicket", "Muestra todos los Tickets"));
     		commands.put(new JSONObject().put("listticketstatus", "Lista los posibles estados de un ticket"));
     		commands.put(new JSONObject().put("listeventtype", "Lista los posibles tipos de eventos"));
     		commands.put(new JSONObject().put("listelementtype", "Lista los posibles tipos de elementos"));
     		commands.put(new JSONObject().put("listusertype", "Lista los posibles tipos de usuarios"));
+    		// Login
+    		commands.put(new JSONObject().put("login(login_name, shdw_passwd)", "Comprueba login de usuario"));
     	}
+    }
+    
+    /*************************************************************************************/
+    
+    public boolean connect() throws SQLException {
     	
     	con = DriverManager.getConnection(SURL, USU, PASS);
-    	if (con.isClosed()) System.out.println(Consola.RED+"X"+Consola.RESET);
-    	else System.out.print("O");
+    	return !con.isClosed();
+    	
     }
     
     /*************************************************************************************/
@@ -46,10 +52,8 @@ public class AccesoSQL {
     public boolean closeConnection() throws SQLException {
     	con.close();
     	if (con.isClosed()) {
-    		//System.out.println("Conexion cerrada");
     		return true;
     	} else {
-    		//System.out.println("No se pudo cerrar la conexion");
     		return false;
     	}
     }
@@ -66,27 +70,50 @@ public class AccesoSQL {
     
     /*************************************************************************************/
     
-    public JSONObject login(String username, String password) throws SQLException {
+    public JSONObject login(String[] credentials) throws SQLException {
 
-    	String query = "SELECT * FROM Login WHERE login_name LIKE '?'";
-    	
-    	JSONObject response = new JSONObject();
+    	content = new JSONArray();
+    	String query = "SELECT * FROM Login WHERE login_name LIKE ?";
+    	String token = null; 
+    	boolean error = false;
     	
     	ps = con.prepareStatement(query);
-    	ps.setString(1, username);
+    	ps.setString(1, credentials[0]);
     	
     	rs = ps.executeQuery();
+    	
     	while (rs.next()) {
-    		if (password.equals(rs.getString(1))) {
-    			response.put("response", 200);
-    			response.put("content", "token");
-    			return response;
+    		
+    		if (credentials[1].equals(rs.getString(3))) {
+    			
+    			try {
+    				token = assignToken(rs.getInt(1));
+    			} catch (Exception e) {
+    				token = e.getMessage();
+    				error = true;
+    			}
+    			
+    			if (error) {
+    				content.put(new JSONObject().put("content", "Error al generar el token: "+token));
+    		    	return JsonTreatment.sendResponseCode(500, content);
+    			}
+    			
+    			if (token.equals("400")) {
+    				
+    				content.put(new JSONObject().put("content", "Error indeterminado"));
+    		    	return JsonTreatment.sendResponseCode(500, content);
+    				
+    			} else {
+    			
+    				content.put(new JSONObject().put("content", token));
+        			return JsonTreatment.sendResponseCode(200, content);
+    				
+    			}
+    			
     		}
     	}
-    	
-    	response.put("response", 400);
-		response.put("content", "Ningún usuario coincide con esas credenciales");
-    	return response;
+    	content.put(new JSONObject().put("content", "Ningún usuario coincide con esas credenciales"));
+    	return JsonTreatment.sendResponseCode(400, content);
     }
     
     /*************************************************************************************/
@@ -190,7 +217,7 @@ public class AccesoSQL {
         ps.setInt(3, batch.getInt("status"));
         ps.setInt(4, batch.getInt("owner"));
         ps.setInt(5, batch.getInt("object"));
-        // Falta añadir la vinculación de los técnicos asignados.
+
     	int result = ps.executeUpdate();
     	
     	if (result == 1) {
@@ -213,7 +240,7 @@ public class AccesoSQL {
     	ps.setString(2, batch.getString("name"));
         ps.setString(3, batch.getString("lastname"));
         ps.setInt(4, batch.getInt("user_type"));
-        // Falta añadir la vinculación de los técnicos asignados.
+
     	int result = ps.executeUpdate();
     	
     	if (result == 1) {
@@ -226,7 +253,26 @@ public class AccesoSQL {
     
     /*************************************************************************************/
     
-    
+    public String assignToken(int userId) throws Exception {
+    	String query = "INSERT INTO Token (`login_id`, `token_hash`) VALUES (?,?) ON DUPLICATE KEY UPDATE login_id=?, token_hash=?";
+    	String token = TokenGenerator.generate();
+    	
+    	ps = con.prepareStatement(query);
+    	
+    	ps.setInt(1, userId);
+    	ps.setString(2, token);
+    	ps.setInt(3, userId);
+    	ps.setString(4, token);
+    	
+    	int result = ps.executeUpdate();
+    	
+    	if (result < 1) {
+    		return "400";
+    	} else {
+    		return token;
+    	}
+    	
+    }
     
 
 }
