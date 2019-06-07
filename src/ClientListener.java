@@ -29,12 +29,15 @@ import org.json.JSONObject;
 public class ClientListener implements Runnable {
 	
 	private final Thread hilo;
+	private final AccesoSQL acceso;
     private final Socket clientSocket;
+    private final String clientAddress;
+    
     private boolean running;
-    
-    private AccesoSQL acceso;
-    
+    private String user;
     private String preguntaEnc;
+    private String e = null;
+    
     private JSONObject pregunta;
     
     private ObjectInputStream entrada = null;
@@ -47,8 +50,6 @@ public class ClientListener implements Runnable {
     private Cipher cifradorSimetrico;
     
     private GCMParameterSpec parameterSpec;
-    
-    private String clientAddress;
     
     public ClientListener(Socket cliente) {
         
@@ -164,6 +165,9 @@ public class ClientListener implements Runnable {
 				System.out.println(Consola.RED+"FAIL"+Consola.RESET+"]");
 			} else {
 				System.out.println(Consola.GREEN+"OK"+Consola.RESET+"]");
+				user = credentials[0];
+				Principal.addUser(user, this);
+				hilo.setName(user+clientSocket.getRemoteSocketAddress());
 				Consola.message(hilo.getName() + " conectado");
 			}
 			
@@ -228,8 +232,9 @@ public class ClientListener implements Runnable {
 					break;
 				}
 				
-				
 			}
+			
+			running = true;
 			entrada.close();
     		salida.close();
     		clientSocket.close();
@@ -237,35 +242,36 @@ public class ClientListener implements Runnable {
     		Principal.getHilos().remove(clientAddress);
     		Consola.event(hilo.getName() + " desconectado.");
 			
-		} catch (IOException 
-				| ClassNotFoundException 
-				| InvalidKeyException 
-				| IllegalBlockSizeException 
-				| BadPaddingException 
-				| SQLException 
-				| JSONException 
-				| InvalidAlgorithmParameterException e) {
-			
-			Consola.error(hilo.getName() + " se desconectó con el error \""+e.getMessage()+"\"");
-			
-			try {
-				entrada.close();
-	    		salida.close();
-			} catch (Exception ex) {
-				ex.printStackTrace();
+		} catch (JSONException e) {
+			this.e = e.getMessage();
+		} catch (IOException e) {
+			this.e = e.getMessage();
+		} catch (SQLException e) {
+			this.e = e.getMessage();
+		} catch (InvalidKeyException e) {
+			this.e = e.getMessage();
+		} catch (InvalidAlgorithmParameterException e) {
+			this.e = e.getMessage();
+		} catch (IllegalBlockSizeException e) {
+			this.e = e.getMessage();
+		} catch (BadPaddingException e) {
+			this.e = e.getMessage();
+		} catch (ClassNotFoundException e) {
+			this.e = e.getMessage();
+		} catch (Exception e) {
+			this.e = e.getMessage();
+		} finally {
+			if (e == null) {
+				Consola.event(hilo.getName() + " desconectado.");
+			} else {
+				if (running) {
+					Consola.error(hilo.getName() + " se desconectó con el error \"" + e + "\"");
+				} else {
+					Consola.event(hilo.getName() + " ha sido desconectado.");
+				}
 			}
-			try {
-				clientSocket.close();
-			} catch (Exception exc) {
-				killThread();
-				exc.printStackTrace();
-				return;
-			}
-
 			killThread();
-			
 		}
-		
 	}
 	
 	/******************************************************************************/
@@ -374,6 +380,8 @@ public class ClientListener implements Runnable {
     
     public void killThread() {
     	
+    	running = false;
+    	
     	try {
     		salida.close();
     	} catch (Exception e) {}
@@ -386,7 +394,13 @@ public class ClientListener implements Runnable {
 			clientSocket.close();
 		} catch (Exception e) {}
 		
-		Principal.getHilos().remove(clientAddress);
+		Principal.getHilos().remove(user);
+    }
+    
+    /******************************************************************************/
+    
+    public Thread getHilo() {
+    	return hilo;
     }
 	
 }

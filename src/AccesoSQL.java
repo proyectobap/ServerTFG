@@ -70,54 +70,6 @@ public class AccesoSQL {
     
     /*************************************************************************************/
     
-    public JSONObject login(String[] credentials) throws SQLException {
-
-    	content = new JSONArray();
-    	String query = "SELECT * FROM Login WHERE login_name LIKE ?";
-    	String token = null; 
-    	boolean error = false;
-    	
-    	ps = con.prepareStatement(query);
-    	ps.setString(1, credentials[0]);
-    	
-    	rs = ps.executeQuery();
-    	
-    	while (rs.next()) {
-    		
-    		if (credentials[1].equals(rs.getString(3))) {
-    			
-    			try {
-    				token = assignToken(rs.getInt(1));
-    			} catch (Exception e) {
-    				token = e.getMessage();
-    				error = true;
-    			}
-    			
-    			if (error) {
-    				content.put(new JSONObject().put("content", "Error al generar el token: "+token));
-    		    	return JsonTreatment.sendResponseCode(500, content);
-    			}
-    			
-    			if (token.equals("400")) {
-    				
-    				content.put(new JSONObject().put("content", "Error indeterminado"));
-    		    	return JsonTreatment.sendResponseCode(500, content);
-    				
-    			} else {
-    			
-    				content.put(new JSONObject().put("content", token));
-        			return JsonTreatment.sendResponseCode(200, content);
-    				
-    			}
-    			
-    		}
-    	}
-    	content.put(new JSONObject().put("content", "Ningún usuario coincide con esas credenciales"));
-    	return JsonTreatment.sendResponseCode(400, content);
-    }
-    
-    /*************************************************************************************/
-    
     public JSONObject loginList() throws SQLException {
 
     	content = new JSONArray();
@@ -140,6 +92,31 @@ public class AccesoSQL {
     
     /*************************************************************************************/
     /*************** FINAL ***************************************************************/
+    /*************************************************************************************/
+    
+    
+    public JSONObject login(String[] credentials) throws SQLException {
+
+    	content = new JSONArray();
+    	String query = "SELECT * FROM Login WHERE login_name LIKE ?";
+    	
+    	ps = con.prepareStatement(query);
+    	ps.setString(1, credentials[0]);
+    	
+    	rs = ps.executeQuery();
+    	
+    	while (rs.next()) {
+    		
+    		if (credentials[1].equals(rs.getString(3))) {
+    			
+    			return JsonTreatment.sendResponseCode(200, "ok");
+    			
+    		}
+    	}
+    	content.put(new JSONObject().put("content", "Ningún usuario coincide con esas credenciales"));
+    	return JsonTreatment.sendResponseCode(400, content);
+    }
+    
     /*************************************************************************************/
     
     public JSONObject list(int x) throws SQLException{

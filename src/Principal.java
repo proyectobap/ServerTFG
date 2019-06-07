@@ -33,4 +33,18 @@ public class Principal {
 	public static void setHilos(Map<String, ClientListener> hilos) {
 		Principal.hilos = hilos;
 	}
+	
+	public static void addUser(String user, ClientListener cli) {
+		
+		if (getHilos().containsKey(user)) {
+			ClientListener subs = getHilos().get(user);
+			subs.killThread();
+			getHilos().remove(user);
+			Consola.event("Server -> Kick client " + user + ". Reason: New login");
+		}
+		
+		getHilos().put(user, cli);
+		
+	}
+	
 }
