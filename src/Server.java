@@ -12,7 +12,7 @@ public class Server extends Thread {
 	@SuppressWarnings({ "resource" })
 	@Override
 	public void run() {
-		System.out.println("BACK-END SERVER 0.5.3 (07/06)");
+		System.out.println("BACK-END SERVER 0.5.5 (07/06)");
 		System.out.println("-------------------");
 		
 		try {
@@ -31,7 +31,7 @@ public class Server extends Thread {
 			}
 			
 		} catch (IOException e) {
-			System.out.println(e.getMessage());
+			System.out.println(Consola.CYAN+"Servidor desconectado"+Consola.RESET);
 		}
 		
 	}

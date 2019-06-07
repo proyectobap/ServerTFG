@@ -223,6 +223,11 @@ public class ClientListener implements Runnable {
 				case "exit":
 					running = false;
 					continue;
+				case "poweroff":
+					running = false;
+					Consola.error(hilo.getName() + " ha iniciado el apagado del Servidor!".toUpperCase());
+					Principal.powerOff();
+					continue;
 				case "help":
 					enviar(symetricEncrypt(acceso.help()));
 					Consola.info(hilo.getName() + " -> Comando ayuda");
@@ -240,7 +245,6 @@ public class ClientListener implements Runnable {
     		clientSocket.close();
     		acceso.closeConnection();
     		Principal.getHilos().remove(clientAddress);
-    		Consola.event(hilo.getName() + " desconectado.");
 			
 		} catch (JSONException e) {
 			this.e = e.getMessage();

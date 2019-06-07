@@ -19,8 +19,9 @@ public class Principal {
 			EncryptModule.initializeKey();
 			hiloServidor = new Server();
 			hiloServidor.start();
+			
 		} catch (Exception e) {
-			System.err.println("Fallo al inicializar el certificado");
+			System.out.println("Fallo al inicializar el certificado");
 			System.out.println(e.getMessage());
 		}
 		
@@ -45,6 +46,15 @@ public class Principal {
 		
 		getHilos().put(user, cli);
 		
+	}
+	
+	public static void powerOff() {
+		for (ClientListener c : hilos.values()) {
+			Consola.event("Expulsando a "+c.getHilo().getName());
+			c.killThread();
+		}
+		Consola.message("Servidor desconectado");
+		System.exit(0);
 	}
 	
 }
