@@ -1,9 +1,11 @@
+import java.util.Map;
 
 public class Principal {
 
 	private final static String DIRECCIONIP = "127.0.0.1";
 	private final static int PUERTO = 35698;
 	private static Thread hiloServidor;
+	private static Map<String, ClientListener> hilos;
 	
 	public static String getDireccionip() {
 		return DIRECCIONIP;
@@ -24,8 +26,11 @@ public class Principal {
 		
 	}
 	
-	public static void shutdown() {
-		System.exit(0);
+	public static Map<String, ClientListener> getHilos() {
+		return hilos;
 	}
 	
+	public static void setHilos(Map<String, ClientListener> hilos) {
+		Principal.hilos = hilos;
+	}
 }

@@ -2,20 +2,17 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Server extends Thread {
 		
-	private Map<String, ClientListener> hilos;
-	
 	public Server() {
-		hilos = new HashMap<String, ClientListener>();
+		Principal.setHilos(new HashMap<String, ClientListener>());
 	}
 	
 	@SuppressWarnings({ "unused", "resource" })
 	@Override
 	public void run() {
-		System.out.println("BACK-END SERVER 0.5 (02/06)");
+		System.out.println("BACK-END SERVER 0.5.2 (07/06)");
 		System.out.println("-------------------");
 		
 		try {
@@ -30,18 +27,18 @@ public class Server extends Thread {
 				String clientFullAddress = conexionCliente.getRemoteSocketAddress().toString();
 				String clientAddress = clientFullAddress.substring(0, clientFullAddress.indexOf(":"));
 				
-				if (hilos.containsKey(clientAddress)) {
-					ClientListener subs = hilos.get(clientAddress);
+				if (Principal.getHilos().containsKey(clientAddress)) {
+					ClientListener subs = Principal.getHilos().get(clientAddress);
 					Consola.event("Server -> Kick client " + clientAddress + ". Reason: Duplicated IP");
 					subs.killThread();
-					hilos.remove(clientAddress);
+					Principal.getHilos().remove(clientAddress);
 					Thread.sleep(500);
 				}
 	
 				System.out.print(Consola.date() + " - ");
 				System.out.print(Consola.YELLOW+"Cliente "+conexionCliente.getRemoteSocketAddress()+Consola.RESET);
 				
-				hilos.put(clientAddress, new ClientListener(conexionCliente));
+				Principal.getHilos().put(clientAddress, new ClientListener(conexionCliente));
 			
 			}
 			
@@ -50,4 +47,5 @@ public class Server extends Thread {
 		}
 		
 	}
+	
 }

@@ -19,7 +19,6 @@ import java.util.Random;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -49,12 +48,17 @@ public class ClientListener implements Runnable {
     
     private GCMParameterSpec parameterSpec;
     
+    private String clientAddress;
+    
     public ClientListener(Socket cliente) {
         
     	acceso = new AccesoSQL();
     	
     	this.clientSocket = cliente;
     	hilo = new Thread(this, "Cliente "+clientSocket.getRemoteSocketAddress());
+    	
+    	String clientFullAddress = clientSocket.getRemoteSocketAddress().toString();
+		clientAddress = clientFullAddress.substring(0, clientFullAddress.indexOf(":"));
     	
     	System.out.print(" - [SQL:");
     	
@@ -67,14 +71,11 @@ public class ClientListener implements Runnable {
 				
 			} else {
 				System.out.println(Consola.RED+"FAIL"+Consola.RESET+"]");
-				running = true;
-		        hilo.start();
-				//clientSocket.close();
+				killThread();
 			}
 		} catch (SQLException e) {
 			System.out.println(Consola.RED+"FAIL"+Consola.RESET+"] -> "+e.getMessage());
-			running = true;
-	        hilo.start();
+			killThread();
 		}
         
     }
@@ -94,6 +95,8 @@ public class ClientListener implements Runnable {
 		} catch (Exception e) {
 			
 			System.out.println(Consola.RED+"FAIL"+Consola.RESET+"] -> "+e.getMessage());
+			killThread();
+			return;
 			
 		}
 		
@@ -125,6 +128,8 @@ public class ClientListener implements Runnable {
 		} catch (Exception e) {
 			
 			System.out.println(Consola.RED+"FAIL"+Consola.RESET+"] -> "+e.getMessage());
+			killThread();
+			return;
 			
 		}
 		
@@ -138,6 +143,8 @@ public class ClientListener implements Runnable {
 		} catch (Exception e) {
 		
 			System.out.println(Consola.RED+"FAIL"+Consola.RESET+"] -> "+e.getMessage());
+			killThread();
+			return;
 			
 		}
 			
@@ -159,7 +166,16 @@ public class ClientListener implements Runnable {
 				System.out.println(Consola.GREEN+"OK"+Consola.RESET+"]");
 				Consola.message(hilo.getName() + " conectado");
 			}
+			
+		} catch (Exception e) {
+			
+			System.out.println(Consola.RED+"FAIL"+Consola.RESET+"] -> "+e.getMessage());
+			killThread();
+			return;
+			
+		}
 
+		try {
 	
 			while (running) {
 				
@@ -214,11 +230,11 @@ public class ClientListener implements Runnable {
 				
 				
 			}
-			
 			entrada.close();
     		salida.close();
     		clientSocket.close();
     		acceso.closeConnection();
+    		Principal.getHilos().remove(clientAddress);
     		Consola.event(hilo.getName() + " desconectado.");
 			
 		} catch (IOException 
@@ -241,9 +257,13 @@ public class ClientListener implements Runnable {
 			try {
 				clientSocket.close();
 			} catch (Exception exc) {
+				killThread();
 				exc.printStackTrace();
+				return;
 			}
-    		
+
+			killThread();
+			
 		}
 		
 	}
@@ -353,6 +373,7 @@ public class ClientListener implements Runnable {
     /******************************************************************************/
     
     public void killThread() {
+    	
     	try {
     		salida.close();
     	} catch (Exception e) {}
@@ -364,6 +385,8 @@ public class ClientListener implements Runnable {
 		try {
 			clientSocket.close();
 		} catch (Exception e) {}
+		
+		Principal.getHilos().remove(clientAddress);
     }
 	
 }
