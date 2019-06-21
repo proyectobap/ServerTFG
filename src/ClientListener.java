@@ -264,6 +264,11 @@ public class ClientListener implements Runnable {
 					Consola.info(hilo.getName() + " -> Listado usuarios");
 					break;
 					
+				case "listevents":
+					enviar(symetricEncrypt(acceso.eventList(pregunta)));
+					Consola.info(hilo.getName() + " -> Listado eventos");
+					break;
+					
 				// Modificar registros					
 					
 				case "modifypassword":

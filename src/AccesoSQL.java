@@ -13,9 +13,9 @@ public class AccesoSQL {
     private JSONArray content;
     private ClientListener cli = null;
     
-    private Connection con;
-    private PreparedStatement ps;
-    private ResultSet rs;
+    private Connection con = null;
+    private PreparedStatement ps = null;
+    private ResultSet rs = null;
     
     /*************************************************************************************/
     
@@ -52,12 +52,19 @@ public class AccesoSQL {
     /*************************************************************************************/
     
     public boolean closeConnection() throws SQLException {
-    	con.close();
-    	if (con.isClosed()) {
-    		return true;
-    	} else {
-    		return false;
+    	
+    	if (rs != null) {
+    		rs.close();
     	}
+    	
+    	if (ps != null) {
+    		ps.close();
+    	}
+    	
+    	
+    	con.close();
+    	return con.isClosed();
+    	
     }
     
     /*************************************************************************************/
@@ -229,7 +236,7 @@ public class AccesoSQL {
     	while (rs.next()) {
     		
     		JSONObject responseB = new JSONObject();
-    		responseB.put("id", rs.getInt(1));
+    		responseB.put("user_id", rs.getInt(1));
     		responseB.put("email", rs.getString(2));
     		responseB.put("name", rs.getString(3));
     		responseB.put("last_name", rs.getString(4));
@@ -418,25 +425,88 @@ public class AccesoSQL {
     
     public JSONObject newTask(JSONObject batch) throws SQLException {
 
-    	String query = "INSERT INTO Task (`event_id`, `time`, `is_done`) VALUES (?, ?, ?)";
+    	String query = "INSERT INTO Event (`event_desc`, `ticket_id`, `event_type`) VALUES (?, ?, 2)";
     	
     	ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
     	
-    	ps.setInt(1, batch.getInt("event_id"));
-    	ps.setInt(2, batch.getInt("time"));
-        ps.setBoolean(3, batch.getBoolean("is_done"));
+    	ps.setString(1, batch.getString("event_desc"));
+    	ps.setInt(2, batch.getInt("ticket_id"));
 
     	int result = ps.executeUpdate();
     	
     	if (result == 1) {
+    		
     		ResultSet res = ps.getGeneratedKeys();
     		res.next();
-    		System.out.println("Se ha creado la tarea número "+res.getInt(1));
-    		return JsonTreatment.sendResponseCode(200, res.getInt(1), "Se han añadido "+ result +" lineas a la base de datos");
+    		int event = res.getInt(1);
+    		System.out.println("Se ha creado el evento número "+ event );
+    		
+    		query = "INSERT INTO Task (`event_id`, `time`, `is_done`) VALUES ("+ event +", ?, ?)";
+        	
+        	ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        	
+        	ps.setInt(1, batch.getInt("time"));
+            ps.setBoolean(2, batch.getBoolean("is_done"));
+
+        	result = ps.executeUpdate();
+        	
+        	if (result == 1) {
+        		return JsonTreatment.sendResponseCode(200, event, "Se han añadido "+ result +" lineas a la base de datos");
+        	} else {
+        		return JsonTreatment.sendResponseCode(400, "Se han añadido "+ result +" lineas a la base de datos");
+        	}
+    		
     	} else {
     		return JsonTreatment.sendResponseCode(400, "Se han añadido "+ result +" lineas a la base de datos");
     	}
     	
+    }
+    
+    /*************************************************************************************/
+    
+    public JSONObject eventList(JSONObject batch) throws SQLException {
+
+    	content = new JSONArray();
+    	
+    	String query = "SELECT * FROM Event WHERE ticket_id = ?";
+    	
+    	ps = con.prepareStatement(query);
+    	ps.setInt(1, batch.getInt("ticket_id"));
+    	
+    	rs = ps.executeQuery();
+    	
+    	while (rs.next()) {
+    		
+    		int tipoEvento = rs.getInt(6);
+    		int noEvento = rs.getInt(1);
+    		
+    		JSONObject responseB = new JSONObject();
+    		responseB.put("event_id", rs.getInt(1));
+    		responseB.put("create_time", rs.getDate(2));
+    		responseB.put("mod_date", rs.getDate(3));
+    		responseB.put("event_desc", rs.getString(4));
+    		responseB.put("event_type", tipoEvento);
+    		
+    		if (tipoEvento == 2) {
+    			
+    			String queryAlt = "SELECT * FROM Task WHERE event_id = " + noEvento;
+    	    	
+    	    	ps = con.prepareStatement(queryAlt);
+    	    	
+    	    	ResultSet resultSet = ps.executeQuery();
+    	    	
+    	    	resultSet.next();
+    	    	
+    	    	responseB.put("time", resultSet.getInt(2));
+    	    	responseB.put("is_done", resultSet.getBoolean(3));
+    	    	
+    		}
+    		
+    		content.put(responseB);
+    		
+    	}
+    	
+    	return JsonTreatment.sendResponseCode(200, content);
     }
 
 }
