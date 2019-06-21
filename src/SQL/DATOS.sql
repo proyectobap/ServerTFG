@@ -22,3 +22,5 @@ INSERT INTO `produccion_db`.`TicketStatus` (`desc`) VALUES ('Cerrado');
 
 INSERT INTO `produccion_db`.`User` (`email`, `name`, `last_name`, `user_type`) VALUES ('example@example.com', 'admin', 'super', '5');
 INSERT INTO `produccion_db`.`Login` (`login_name`, `shdw_passwd`, `user_id`) VALUES ('admin', 'pasword', '00000001');
+INSERT INTO `produccion_db`.`Ticket` (`title`, `desc`, `ticket_status_id`, `ticket_owner`, `ticket_object`) VALUES ('Ticket no válido', 'Este ticket existe para vincular eventos y elementos que no se quieran mostrar', '6', '00000001', '00000001');
+UPDATE `produccion_db`.`Ticket` SET `ticket_id`='00000000' WHERE  `ticket_id`=00000001;

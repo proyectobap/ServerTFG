@@ -192,6 +192,9 @@ public class AccesoSQL {
     		responseB.put("ticketOwner", rs.getString(9));
     		responseB.put("ticket_object", rs.getInt(10));
     		responseB.put("ticketObject", rs.getString(11));
+    		if (responseB.getInt("ticket_id") == 0) {
+    			break;
+    		}
     		content.put(responseB);
     	}
     	return JsonTreatment.sendResponseCode(200, content);
@@ -218,6 +221,9 @@ public class AccesoSQL {
     		responseB.put("ticket_status_id", rs.getInt(7));
     		responseB.put("ticket_owner", rs.getInt(8));
     		responseB.put("ticket_object", rs.getInt(9));
+    		if (responseB.getInt("ticket_id") == 0) {
+    			break;
+    		}
     		content.put(responseB);
     	}
     	return JsonTreatment.sendResponseCode(200, content);
@@ -507,6 +513,100 @@ public class AccesoSQL {
     	}
     	
     	return JsonTreatment.sendResponseCode(200, content);
+    }
+    
+    /*************************************************************************************/
+    
+    public JSONObject modifyEvent(JSONObject batch) throws SQLException {
+
+    	String query = 
+    		"UPDATE Event SET event_desc= ?, ticket_id= ?, event_type= ? WHERE event_id = ?";
+    	
+    	ps = con.prepareStatement(query);
+
+    	ps.setString(1, batch.getString("event_desc"));
+    	ps.setInt(2, batch.getInt("ticket_id"));
+        ps.setInt(3, batch.getInt("event_type"));
+        ps.setInt(4, batch.getInt("event_id"));
+
+    	int result = ps.executeUpdate();
+    	
+    	if (result >= 1) {
+    		return JsonTreatment.sendResponseCode(200, "Se han modificado "+ result +" lineas");
+    	} else {
+    		return JsonTreatment.sendResponseCode(400, "Se han modificado "+ result +" lineas");
+    	}
+    	
+    }
+    
+    /*************************************************************************************/
+    
+    public JSONObject modifyTask(JSONObject batch) throws SQLException {
+
+    	String query = 
+    		"UPDATE Task SET time= ?, is_done= ? WHERE event_id = ?";
+    	
+    	ps = con.prepareStatement(query);
+
+    	ps.setString(1, batch.getString("time"));
+    	ps.setBoolean(2, batch.getBoolean("is_done"));
+        ps.setInt(3, batch.getInt("event_id"));
+
+    	int result = ps.executeUpdate();
+    	
+    	if (result >= 1) {
+    		return JsonTreatment.sendResponseCode(200, "Se han modificado "+ result +" lineas");
+    	} else {
+    		return JsonTreatment.sendResponseCode(400, "Se han modificado "+ result +" lineas");
+    	}
+    	
+    }
+    
+    /*************************************************************************************/
+    
+    public JSONObject modifyTicket(JSONObject batch) throws SQLException {
+
+    	String query = 
+    		"UPDATE Ticket SET title = ?, desc = ?, ticket_status_id = ?, ticket_owner = ?, ticket_object = ? WHERE ticket_id = ?";
+    	
+    	ps = con.prepareStatement(query);
+
+    	ps.setString(1, batch.getString("title"));
+    	ps.setString(2, batch.getString("desc"));
+        ps.setInt(3, batch.getInt("ticket_status_id"));
+        ps.setInt(4, batch.getInt("ticket_owner"));
+        ps.setInt(5, batch.getInt("ticket_object"));
+        ps.setInt(6, batch.getInt("ticket_id"));
+
+    	int result = ps.executeUpdate();
+    	
+    	if (result >= 1) {
+    		return JsonTreatment.sendResponseCode(200, "Se han modificado "+ result +" lineas");
+    	} else {
+    		return JsonTreatment.sendResponseCode(400, "Se han modificado "+ result +" lineas");
+    	}
+    	
+    }
+    
+    /*************************************************************************************/
+    
+    public JSONObject solveTicket(JSONObject batch) throws SQLException {
+
+    	String query = 
+    		"UPDATE Ticket SET ticket_status_id = 5, end_date = NOW()  WHERE ticket_id = ?";
+    	
+    	ps = con.prepareStatement(query);
+    	
+        ps.setInt(1, batch.getInt("ticket_id"));
+
+    	int result = ps.executeUpdate();
+    	
+    	if (result >= 1) {
+    		return JsonTreatment.sendResponseCode(200, "Se han modificado "+ result +" lineas");
+    	} else {
+    		return JsonTreatment.sendResponseCode(400, "Se han modificado "+ result +" lineas");
+    	}
+    	
     }
 
 }

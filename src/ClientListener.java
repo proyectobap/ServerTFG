@@ -286,6 +286,26 @@ public class ClientListener implements Runnable {
 					Consola.info(hilo.getName() + " -> Modificación Usuario por admin");
 					break;
 					
+				case "modifyevent":
+					enviar(symetricEncrypt(acceso.modifyEvent(pregunta)));
+					Consola.info(hilo.getName() + " -> Modificación Evento");
+					break;
+					
+				case "modifytask":
+					enviar(symetricEncrypt(acceso.modifyTask(pregunta)));
+					Consola.info(hilo.getName() + " -> Modificación Tarea");
+					break;
+					
+				case "modifyticket":
+					enviar(symetricEncrypt(acceso.modifyTicket(pregunta)));
+					Consola.info(hilo.getName() + " -> Modificación Ticket");
+					break;
+					
+				case "solveticket":
+					enviar(symetricEncrypt(acceso.solveTicket(pregunta)));
+					Consola.info(hilo.getName() + " -> Solución de Ticket");
+					break;
+					
 				// Runtime Options
 					
 				case "exit":
