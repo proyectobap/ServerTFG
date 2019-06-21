@@ -10,8 +10,8 @@ INSERT INTO `produccion_db`.`ElementType` (`desc`) VALUES ('Borrado');
 
 INSERT INTO `produccion_db`.`EventType` (`desc`) VALUES ('Seguimiento');
 INSERT INTO `produccion_db`.`EventType` (`desc`) VALUES ('Tarea');
-INSERT INTO `produccion_db`.`EventType` (`desc`) VALUES ('Documento');
 INSERT INTO `produccion_db`.`EventType` (`desc`) VALUES ('Solución');
+INSERT INTO `produccion_db`.`EventType` (`desc`) VALUES ('Borrado');
 
 INSERT INTO `produccion_db`.`TicketStatus` (`desc`) VALUES ('Abierto');
 INSERT INTO `produccion_db`.`TicketStatus` (`desc`) VALUES ('Asignado');

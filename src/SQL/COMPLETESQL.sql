@@ -14,35 +14,23 @@ CREATE TABLE IF NOT EXISTS `User` (
   `last_name` VARCHAR(45) NULL,
   `user_type` INT(1) NOT NULL,
   PRIMARY KEY (`user_id`),
-  CONSTRAINT `type`
+  CONSTRAINT `FK1`
     FOREIGN KEY (`user_type`)
-    REFERENCES `produccion_db`.`UserType` (`user_type_id`)
+    REFERENCES `UserType` (`user_type_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `Login` (
   `login_id` INT(8) ZEROFILL NOT NULL AUTO_INCREMENT,
-  `login_name` VARCHAR(15) NOT NULL,
+  `login_name` VARCHAR(15) NOT NULL UNIQUE,
   `shdw_passwd` VARCHAR(45) NOT NULL,
   `create_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `user_id` INT(8) ZEROFILL NOT NULL,
   PRIMARY KEY (`login_id`, `user_id`),
-  CONSTRAINT `user`
+  CONSTRAINT `FK2`
     FOREIGN KEY (`user_id`)
     REFERENCES `User` (`user_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-CREATE TABLE IF NOT EXISTS `Token` (
-  `login_id` INT(8) ZEROFILL NOT NULL,
-  `token_hash` VARCHAR(32) NOT NULL,
-  `access_time` TIMESTAMP NOT NULL,
-  PRIMARY KEY (`login_id`),
-  CONSTRAINT `login`
-    FOREIGN KEY (`login_id`)
-    REFERENCES `Login` (`login_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -54,11 +42,11 @@ CREATE TABLE IF NOT EXISTS `ElementType` (
 ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `Element` (
-  `element_id` INT(8) ZEROFILL NOT NULL,
+  `element_id` INT(8) ZEROFILL NOT NULL AUTO_INCREMENT,
   `internal_name` VARCHAR(45) NOT NULL,
   `element_type` INT(1) NOT NULL,
   PRIMARY KEY (`element_id`),
-  CONSTRAINT `type_id`
+  CONSTRAINT `FK3`
     FOREIGN KEY (`element_type`)
     REFERENCES `ElementType` (`element_type_id`)
     ON DELETE NO ACTION
@@ -70,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `Software` (
   `developer` VARCHAR(45) NULL,
   `version` VARCHAR(45) NULL,
   PRIMARY KEY (`element_id`),
-  CONSTRAINT `software`
+  CONSTRAINT `FK4`
     FOREIGN KEY (`element_id`)
     REFERENCES `Element` (`element_id`)
     ON DELETE NO ACTION
@@ -83,7 +71,7 @@ CREATE TABLE IF NOT EXISTS `Hardware` (
   `brand` VARCHAR(45) NULL,
   `model` VARCHAR(45) NULL,
   PRIMARY KEY (`element_id`),
-  CONSTRAINT `hardware`
+  CONSTRAINT `FK5`
     FOREIGN KEY (`element_id`)
     REFERENCES `Element` (`element_id`)
     ON DELETE NO ACTION
@@ -98,49 +86,42 @@ ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `Ticket` (
   `ticket_id` INT(8) ZEROFILL NOT NULL AUTO_INCREMENT,
-  `start_date` TIMESTAMP NOT NULL,
-  `end_date` TIMESTAMP NULL,
-  `mod_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `mod_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `end_date` TIMESTAMP NULL,
+  `title` VARCHAR(200) NOT NULL,
   `desc` LONGTEXT NOT NULL,
   `ticket_status_id` INT(1) NOT NULL,
   `ticket_owner` INT(8) ZEROFILL NOT NULL,
   `ticket_object` INT(8) ZEROFILL NOT NULL,
   PRIMARY KEY (`ticket_id`),
-  CONSTRAINT `ticket_status`
+  CONSTRAINT `FK6`
     FOREIGN KEY (`ticket_status_id`)
     REFERENCES `TicketStatus` (`ticket_status_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `ticket_owner`
+  CONSTRAINT `FK7`
     FOREIGN KEY (`ticket_owner`)
     REFERENCES `User` (`user_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `client`
+  CONSTRAINT `FK8`
     FOREIGN KEY (`ticket_object`)
     REFERENCES `User` (`user_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-ALTER TABLE `Ticket`
-	CHANGE COLUMN `start_date` `start_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `ticket_id`,
-	CHANGE COLUMN `mod_date` `mod_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER `end_date`;
-
-ALTER TABLE `Ticket`
-	ADD COLUMN `title` VARCHAR(200) NOT NULL AFTER `create_time`;
-
 CREATE TABLE IF NOT EXISTS `TechAssignement` (
   `ticket_id` INT(8) ZEROFILL NOT NULL,
   `assigned_tech` INT(8) ZEROFILL NOT NULL,
   PRIMARY KEY (`ticket_id`, `assigned_tech`),
-  CONSTRAINT `tech`
+  CONSTRAINT `FK9`
     FOREIGN KEY (`assigned_tech`)
     REFERENCES `User` (`user_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `ticketid`
+  CONSTRAINT `FK10`
     FOREIGN KEY (`ticket_id`)
     REFERENCES `Ticket` (`ticket_id`)
     ON DELETE NO ACTION
@@ -151,12 +132,12 @@ CREATE TABLE IF NOT EXISTS `ElementsAsign` (
   `ticket_id` INT(8) ZEROFILL NOT NULL,
   `element_id` INT(8) ZEROFILL NOT NULL,
   PRIMARY KEY (`ticket_id`, `element_id`),
-  CONSTRAINT `ticket`
+  CONSTRAINT `FK11`
     FOREIGN KEY (`ticket_id`)
     REFERENCES `Ticket` (`ticket_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `element`
+  CONSTRAINT `FK12`
     FOREIGN KEY (`element_id`)
     REFERENCES `Element` (`element_id`)
     ON DELETE NO ACTION
@@ -164,24 +145,26 @@ CREATE TABLE IF NOT EXISTS `ElementsAsign` (
 ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `EventType` (
-  `event_type_id` INT(1) ZEROFILL NOT NULL AUTO_INCREMENT,
+  `event_type_id` INT(1) NOT NULL AUTO_INCREMENT,
   `desc` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`event_type_id`)
   )
 ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `Event` (
-  `event_id` INT(8) ZEROFILL NOT NULL,
+  `event_id` INT(8) ZEROFILL NOT NULL AUTO_INCREMENT,
   `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `mod_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `event_desc` LONGTEXT NOT NULL,
   `ticket_id` INT(8) ZEROFILL NOT NULL,
-  `event_type` INT(1) UNSIGNED NOT NULL,
+  `event_type` INT(1) NOT NULL,
   PRIMARY KEY (`event_id`),
-  CONSTRAINT `FK1`
+  CONSTRAINT `FK13`
     FOREIGN KEY (`ticket_id`)
     REFERENCES `Ticket` (`ticket_id`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE,
-  CONSTRAINT `FK2`
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `FK14`
     FOREIGN KEY (`event_type`)
     REFERENCES `EventType` (`event_type_id`)
     ON DELETE NO ACTION
@@ -190,44 +173,10 @@ ENGINE = INNODB;
 
 CREATE TABLE IF NOT EXISTS `Task` (
   `event_id` INT(8) ZEROFILL NOT NULL,
-  `desc` VARCHAR(512) NOT NULL,
   `time` INT(7) NOT NULL DEFAULT 0,
-  `isDone` BIT(1) NOT NULL DEFAULT 0,
+  `is_done` BIT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`event_id`),
-  CONSTRAINT `FK3`
-    FOREIGN KEY (`event_id`)
-    REFERENCES `Event` (`event_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-CREATE TABLE IF NOT EXISTS `Document` (
-  `event_id` INT(8) ZEROFILL NOT NULL,
-  `document` LONGBLOB NOT NULL,
-  PRIMARY KEY (`event_id`),
-  CONSTRAINT `FK4`
-    FOREIGN KEY (`event_id`)
-    REFERENCES `Event` (`event_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-CREATE TABLE IF NOT EXISTS `Comment` (
-  `event_id` INT(8) ZEROFILL NOT NULL,
-  `desc` VARCHAR(512) NOT NULL,
-  PRIMARY KEY (`event_id`),
-  CONSTRAINT `FK5`
-    FOREIGN KEY (`event_id`)
-    REFERENCES `Event` (`event_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-CREATE TABLE IF NOT EXISTS `Solution` (
-  `event_id` INT(8) ZEROFILL NOT NULL,
-  `desc` VARCHAR(512) NOT NULL,
-  PRIMARY KEY (`event_id`),
-  CONSTRAINT `FK6`
+  CONSTRAINT `FK15`
     FOREIGN KEY (`event_id`)
     REFERENCES `Event` (`event_id`)
     ON DELETE NO ACTION

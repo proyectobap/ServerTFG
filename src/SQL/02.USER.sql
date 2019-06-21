@@ -5,9 +5,9 @@ CREATE TABLE IF NOT EXISTS `User` (
   `last_name` VARCHAR(45) NULL,
   `user_type` INT(1) NOT NULL,
   PRIMARY KEY (`user_id`),
-  CONSTRAINT `type`
+  CONSTRAINT `FK1`
     FOREIGN KEY (`user_type`)
-    REFERENCES `produccion_db`.`UserType` (`user_type_id`)
+    REFERENCES `UserType` (`user_type_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

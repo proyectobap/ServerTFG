@@ -37,6 +37,7 @@ public class ClientListener implements Runnable {
     private String user;
     private String preguntaEnc;
     private String e = null;
+    private int loginId;
     
     private JSONObject pregunta;
     
@@ -51,9 +52,13 @@ public class ClientListener implements Runnable {
     
     private GCMParameterSpec parameterSpec;
     
+    public void setLoginId(int id) {
+    	this.loginId = id;
+    }
+    
     public ClientListener(Socket cliente) {
         
-    	acceso = new AccesoSQL();
+    	acceso = new AccesoSQL(this);
     	
     	this.clientSocket = cliente;
     	hilo = new Thread(this, "Cliente "+clientSocket.getRemoteSocketAddress());
@@ -188,52 +193,109 @@ public class ClientListener implements Runnable {
 				
 				switch (pregunta.getString("peticion").toLowerCase()) {
 				
-				case "testlogin":
-					enviar(symetricEncrypt(acceso.loginList()));
-					Consola.info(hilo.getName() + " -> TestLogin");
-					break;
-				case "newticket":
-					enviar(symetricEncrypt(acceso.newTicket(pregunta)));
-					Consola.info(hilo.getName() + " -> Crear Ticket");
-					break;
-				case "newuser":
-					enviar(symetricEncrypt(acceso.newUser(pregunta)));
-					Consola.info(hilo.getName() + " -> Crear Usuario");
-					break;
+				// Tablas auxiliares
+				
 				case "listticketstatus":
 					enviar(symetricEncrypt(acceso.list(2)));
 					Consola.info(hilo.getName() + " -> Listado Estado de Tickets");
 					break;
+					
 				case "listusertype":
 					enviar(symetricEncrypt(acceso.list(3)));
 					Consola.info(hilo.getName() + " -> Listado Tipos de Usuario");
 					break;
+					
 				case "listeventtype":
 					enviar(symetricEncrypt(acceso.list(1)));
 					Consola.info(hilo.getName() + " -> Listado Tipos de Eventos");
 					break;
+					
 				case "listelementtype":
 					enviar(symetricEncrypt(acceso.list(0)));
 					Consola.info(hilo.getName() + " -> Listado Tipos de Elementos");
 					break;
+					
+				// Inserción
+					
+				case "newticket":
+					enviar(symetricEncrypt(acceso.newTicket(pregunta)));
+					Consola.info(hilo.getName() + " -> Crear Ticket");
+					break;
+					
+				case "newuser":
+					enviar(symetricEncrypt(acceso.newUser(pregunta)));
+					Consola.info(hilo.getName() + " -> Crear Usuario");
+					break;
+					
+				case "newlogin":
+					enviar(symetricEncrypt(acceso.newUser(pregunta)));
+					Consola.info(hilo.getName() + " -> Asociar Login");
+					break;
+					
+				case "newevent":
+					enviar(symetricEncrypt(acceso.newEvent(pregunta)));
+					Consola.info(hilo.getName() + " -> Crear Evento");
+					break;
+					
+				case "newtask":
+					enviar(symetricEncrypt(acceso.newTask(pregunta)));
+					Consola.info(hilo.getName() + " -> Crear Tarea");
+					break;
+					
+				// Consulta Tablas
+				
 				case "listticket":
 					enviar(symetricEncrypt(acceso.listarTickets()));
 					Consola.info(hilo.getName() + " -> Listado Tickets");
 					break;
+					
+				case "listticketfilter":
+					enviar(symetricEncrypt(acceso.listarTicketsFiltro(pregunta)));
+					Consola.info(hilo.getName() + " -> Listado Tickets con filtro");
+					break;
+					
+				case "ticketview":
+					enviar(symetricEncrypt(acceso.cogerTicket(pregunta)));
+					Consola.info(hilo.getName() + " -> Petición ticket");
+					break;
+					
+				case "listusers":
+					enviar(symetricEncrypt(acceso.userList()));
+					Consola.info(hilo.getName() + " -> Listado usuarios");
+					break;
+					
+				// Modificar registros					
+					
+				case "modifypassword":
+					enviar(symetricEncrypt(acceso.modifyUserPassword(pregunta, loginId)));
+					Consola.info(hilo.getName() + " -> Modificación Contraseña");
+					break;
+					
+				case "modifyownuser":
+					enviar(symetricEncrypt(acceso.modifyOwnUser(pregunta, loginId)));
+					Consola.info(hilo.getName() + " -> Modificación Usuario");
+					break;
+					
+				case "modifyuser":
+					enviar(symetricEncrypt(acceso.modifyUser(pregunta)));
+					Consola.info(hilo.getName() + " -> Modificación Usuario por admin");
+					break;
+					
+				// Runtime Options
+					
 				case "exit":
 					running = false;
-					continue;
+					break;
+					
 				case "poweroff":
 					running = false;
 					Consola.error(hilo.getName() + " ha iniciado el apagado del Servidor!".toUpperCase());
 					Principal.powerOff();
-					continue;
-				case "help":
+					break;
+					
+				default:
 					enviar(symetricEncrypt(acceso.help()));
 					Consola.info(hilo.getName() + " -> Comando ayuda");
-					break;
-				default:
-					enviar(symetricEncrypt(JsonTreatment.nullResponse()));
 					break;
 				}
 				
