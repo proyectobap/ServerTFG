@@ -790,4 +790,88 @@ public class AccesoSQL {
     	
     }
     
+    /*************************************************************************************/
+    
+    public JSONObject assignElement(JSONObject batch) throws SQLException {
+
+    	String query = "INSERT INTO ElementsAsign (`ticket_id`, `element_id`) VALUES (?, ?)";
+    	
+    	ps = con.prepareStatement(query);
+    	
+    	ps.setInt(1, batch.getInt("ticket_id"));
+    	ps.setInt(2, batch.getInt("element_id"));
+
+    	int result = ps.executeUpdate();
+        	
+    	if (result == 1) {
+    		return JsonTreatment.sendResponseCode(200, "Se han añadido "+ result +" lineas a la base de datos");
+    	} else {
+    		return JsonTreatment.sendResponseCode(400, "Se han añadido "+ result +" lineas a la base de datos");
+    	}
+    	
+    }
+    
+    /*************************************************************************************/
+    
+    public JSONObject assignTech(JSONObject batch) throws SQLException {
+
+    	String query = "INSERT INTO TechAssignement (`ticket_id`, `assigned_tech`) VALUES (?, ?)";
+    	
+    	ps = con.prepareStatement(query);
+    	
+    	ps.setInt(1, batch.getInt("ticket_id"));
+    	ps.setInt(2, batch.getInt("assigned_tech"));
+
+    	int result = ps.executeUpdate();
+        	
+    	if (result == 1) {
+    		return JsonTreatment.sendResponseCode(200, "Se han añadido "+ result +" lineas a la base de datos");
+    	} else {
+    		return JsonTreatment.sendResponseCode(400, "Se han añadido "+ result +" lineas a la base de datos");
+    	}
+    	
+    }
+    
+    /*************************************************************************************/
+    
+    public JSONObject deleteAssignedElement(JSONObject batch) throws SQLException {
+
+    	String query = "DELETE FROM ElementsAsign WHERE  ticket_id = ? AND element_id = ?";
+    	
+    	ps = con.prepareStatement(query);
+    	
+    	ps.setInt(1, batch.getInt("ticket_id"));
+    	ps.setInt(2, batch.getInt("element_id"));
+
+    	int result = ps.executeUpdate();
+        	
+    	if (result == 1) {
+    		return JsonTreatment.sendResponseCode(200, "Se han eliminado "+ result +" lineas de la base de datos");
+    	} else {
+    		return JsonTreatment.sendResponseCode(400, "Se han eliminado "+ result +" lineas de la base de datos");
+    	}
+    	
+    }
+    
+    /*************************************************************************************/
+    
+    public JSONObject deleteAssignedTech(JSONObject batch) throws SQLException {
+
+    	String query = "DELETE FROM TechAssignement WHERE  ticket_id = ? AND assigned_tech = ?";
+    	
+    	ps = con.prepareStatement(query);
+    	
+    	ps.setInt(1, batch.getInt("ticket_id"));
+    	ps.setInt(2, batch.getInt("assigned_tech"));
+
+    	int result = ps.executeUpdate();
+        	
+    	if (result == 1) {
+    		return JsonTreatment.sendResponseCode(200, "Se han eliminado "+ result +" lineas de la base de datos");
+    	} else {
+    		return JsonTreatment.sendResponseCode(400, "Se han eliminado "+ result +" lineas de la base de datos");
+    	}
+    	
+    }
+    
 }

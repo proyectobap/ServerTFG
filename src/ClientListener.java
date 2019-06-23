@@ -252,6 +252,16 @@ public class ClientListener implements Runnable {
 					Consola.info(hilo.getName() + " -> Crear Software");
 					break;
 					
+				case "assignelement":
+					enviar(symetricEncrypt(acceso.assignElement(pregunta)));
+					Consola.info(hilo.getName() + " -> Asociar Elemento");
+					break;
+					
+				case "assigntech":
+					enviar(symetricEncrypt(acceso.assignTech(pregunta)));
+					Consola.info(hilo.getName() + " -> Asociar Técnico");
+					break;
+					
 				// Consulta Tablas
 				
 				case "listticket":
@@ -334,6 +344,18 @@ public class ClientListener implements Runnable {
 				case "modifysoftware":
 					enviar(symetricEncrypt(acceso.modifySoftware(pregunta)));
 					Consola.info(hilo.getName() + " -> Modificación Software");
+					break;
+					
+				// Borrado
+					
+				case "deleteelementassigned":
+					enviar(symetricEncrypt(acceso.deleteAssignedElement(pregunta)));
+					Consola.info(hilo.getName() + " -> Eliminación asignación Elemento");
+					break;
+					
+				case "deletetechassigned":
+					enviar(symetricEncrypt(acceso.deleteAssignedTech(pregunta)));
+					Consola.info(hilo.getName() + " -> Eliminación asignación Técnico");
 					break;
 					
 				// Runtime Options
