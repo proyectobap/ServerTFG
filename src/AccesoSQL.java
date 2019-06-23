@@ -95,10 +95,19 @@ public class AccesoSQL {
     	while (rs.next()) {
     		
     		if (credentials[1].equals(rs.getString(3))) {
-    			
+
+    			query = "SELECT user_type FROM User WHERE user_id = ?";
     			cli.setLoginId(rs.getInt(1));
-    			System.out.println(rs.getInt(1));
-    			return JsonTreatment.sendResponseCode(200, "ok");
+    			
+    			ps = con.prepareStatement(query);
+    			ps.setInt(1, rs.getInt(5));
+    			
+    			ResultSet resultSet = ps.executeQuery();
+    			resultSet.next();
+    			int permissionsId = resultSet.getInt(1);
+    			resultSet.close();
+
+    			return JsonTreatment.sendResponseCode(200, permissionsId, "ok");
     			
     		}
     	}
