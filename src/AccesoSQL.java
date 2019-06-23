@@ -698,5 +698,96 @@ public class AccesoSQL {
     	}
     	
     }
+    
+    /*************************************************************************************/
+    
+    public JSONObject elementList() throws SQLException {
 
+    	content = new JSONArray();
+    	
+    	String query = "SELECT * FROM Element";
+    	ps = con.prepareStatement(query);
+    	rs = ps.executeQuery();
+    	
+    	while (rs.next()) {
+    		
+    		JSONObject responseB = new JSONObject();
+    		responseB.put("element_id", rs.getInt(1));
+    		responseB.put("internal_name", rs.getString(2));
+    		responseB.put("element_type", rs.getInt(3));
+    		content.put(responseB);
+    	}
+    	return JsonTreatment.sendResponseCode(200, content);
+    }
+    
+    /*************************************************************************************/
+    
+    public JSONObject modifyElement(JSONObject batch) throws SQLException {
+
+    	String query = 
+    		"UPDATE Element SET internal_name = ?, element_type = ? WHERE element_id = ?";
+    	
+    	ps = con.prepareStatement(query);
+
+    	ps.setString(1, batch.getString("internal_name"));
+    	ps.setString(2, batch.getString("element_type"));
+        ps.setInt(3, batch.getInt("element_id"));
+        
+    	int result = ps.executeUpdate();
+    	
+    	if (result >= 1) {
+    		return JsonTreatment.sendResponseCode(200, "Se han modificado "+ result +" lineas");
+    	} else {
+    		return JsonTreatment.sendResponseCode(400, "Se han modificado "+ result +" lineas");
+    	}
+    	
+    }
+    
+    /*************************************************************************************/
+    
+    public JSONObject modifyHardware(JSONObject batch) throws SQLException {
+
+    	String query = 
+    		"UPDATE Hardware SET S/N = ?, brand = ?, model = ? WHERE element_id = ?";
+    	
+    	ps = con.prepareStatement(query);
+
+    	ps.setString(1, batch.getString("S/N"));
+    	ps.setString(2, batch.getString("brand"));
+    	ps.setString(3, batch.getString("model"));
+    	ps.setInt(4, batch.getInt("element_id"));
+        
+    	int result = ps.executeUpdate();
+    	
+    	if (result >= 1) {
+    		return JsonTreatment.sendResponseCode(200, "Se han modificado "+ result +" lineas");
+    	} else {
+    		return JsonTreatment.sendResponseCode(400, "Se han modificado "+ result +" lineas");
+    	}
+    	
+    }
+    
+    /*************************************************************************************/
+    
+    public JSONObject modifySoftware(JSONObject batch) throws SQLException {
+
+    	String query = 
+    		"UPDATE Software SET developer = ?, version = ? WHERE element_id = ?";
+    	
+    	ps = con.prepareStatement(query);
+
+    	ps.setString(1, batch.getString("developer"));
+    	ps.setString(2, batch.getString("version"));
+    	ps.setInt(4, batch.getInt("element_id"));
+        
+    	int result = ps.executeUpdate();
+    	
+    	if (result >= 1) {
+    		return JsonTreatment.sendResponseCode(200, "Se han modificado "+ result +" lineas");
+    	} else {
+    		return JsonTreatment.sendResponseCode(400, "Se han modificado "+ result +" lineas");
+    	}
+    	
+    }
+    
 }
