@@ -874,4 +874,92 @@ public class AccesoSQL {
     	
     }
     
+    /*************************************************************************************/
+    
+    public JSONObject elementDetail(JSONObject batch) throws SQLException {
+
+    	content = new JSONArray();
+    	
+    	String query = "SELECT * FROM Element WHERE element_id = ?";
+    	ps = con.prepareStatement(query);
+    	rs = ps.executeQuery();
+    	
+    	rs.next();
+    		
+		JSONObject responseB = new JSONObject();
+		responseB.put("element_id", rs.getInt(1));
+		responseB.put("internal_name", rs.getString(2));
+		responseB.put("element_type", rs.getInt(3));
+		
+		if (rs.getInt(3) == 1) {
+			
+			query = "SELECT * FROM Hardware WHERE element_id = ?";
+			ps = con.prepareStatement(query);
+			rs = ps.executeQuery();
+			rs.next();
+			
+			responseB.put("S/N", rs.getString(2));
+			responseB.put("brand", rs.getString(3));
+			responseB.put("model", rs.getString(4));
+			
+			
+		} else if (rs.getInt(3) == 2){
+			
+			query = "SELECT * FROM Software WHERE element_id = ?";
+			ps = con.prepareStatement(query);
+			rs = ps.executeQuery();
+			rs.next();
+			
+			responseB.put("developer", rs.getString(2));
+			responseB.put("version", rs.getString(3));
+			
+		}
+		
+		content.put(responseB);
+
+    	return JsonTreatment.sendResponseCode(200, content);
+    }
+    
+    /*************************************************************************************/
+        
+    public JSONObject techRelation(JSONObject batch) throws SQLException {
+
+    	content = new JSONArray();
+    	
+    	String query = "SELECT assigned_tech FROM TechAssignement WHERE ticket_id = ?";
+    	ps = con.prepareStatement(query);
+    	ps.setInt(1, batch.getInt("ticket_id"));
+    	
+    	rs = ps.executeQuery();
+    	
+    	while (rs.next()) {
+    		
+    		JSONObject responseB = new JSONObject();
+    		responseB.put("assigned_tech", rs.getInt(1));
+    		content.put(responseB);
+    	}
+    	return JsonTreatment.sendResponseCode(200, content);
+    }
+    
+    /*************************************************************************************/
+    
+    public JSONObject elementRelation(JSONObject batch) throws SQLException {
+
+    	content = new JSONArray();
+    	
+    	String query = "SELECT element_id FROM ElementsAsign WHERE ticket_id = ?";
+    	ps = con.prepareStatement(query);
+    	ps.setInt(1, batch.getInt("ticket_id"));
+    	
+    	rs = ps.executeQuery();
+    	
+    	while (rs.next()) {
+    		
+    		JSONObject responseB = new JSONObject();
+    		responseB.put("element_id", rs.getInt(1));
+    		content.put(responseB);
+    	}
+    	return JsonTreatment.sendResponseCode(200, content);
+    }
+    
 }

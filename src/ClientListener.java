@@ -294,6 +294,21 @@ public class ClientListener implements Runnable {
 					Consola.info(hilo.getName() + " -> Listado elementos");
 					break;
 					
+				case "elementdetails":
+					enviar(symetricEncrypt(acceso.elementDetail(pregunta)));
+					Consola.info(hilo.getName() + " -> Información elemento");
+					break;
+					
+				case "techrelation":
+					enviar(symetricEncrypt(acceso.techRelation(pregunta)));
+					Consola.info(hilo.getName() + " -> Información técnicos asociados a ticket");
+					break;
+					
+				case "elementrelation":
+					enviar(symetricEncrypt(acceso.elementRelation(pregunta)));
+					Consola.info(hilo.getName() + " -> Información elementos asociados a ticket");
+					break;
+					
 				// Modificar registros					
 					
 				case "modifypassword":
