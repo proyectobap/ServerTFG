@@ -242,6 +242,16 @@ public class ClientListener implements Runnable {
 					Consola.info(hilo.getName() + " -> Crear Tarea");
 					break;
 					
+				case "newhardware":
+					enviar(symetricEncrypt(acceso.newHardware(pregunta)));
+					Consola.info(hilo.getName() + " -> Crear Hardware");
+					break;
+					
+				case "newsoftware":
+					enviar(symetricEncrypt(acceso.newSoftware(pregunta)));
+					Consola.info(hilo.getName() + " -> Crear Software");
+					break;
+					
 				// Consulta Tablas
 				
 				case "listticket":

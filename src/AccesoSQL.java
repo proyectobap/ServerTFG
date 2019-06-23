@@ -617,5 +617,86 @@ public class AccesoSQL {
     	}
     	
     }
+    
+    /*************************************************************************************/
+    
+    public JSONObject newHardware(JSONObject batch) throws SQLException {
+
+    	String query = "INSERT INTO Element (`internal_name`, `element_type`) VALUES (?, 1)";
+    	
+    	ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+    	
+    	ps.setString(1, batch.getString("internal_name"));
+
+    	int result = ps.executeUpdate();
+    	
+    	if (result == 1) {
+    		
+    		ResultSet res = ps.getGeneratedKeys();
+    		res.next();
+    		int element = res.getInt(1);
+    		System.out.println("Se ha creado el elemento número "+ element);
+    		
+    		query = "INSERT INTO Hardware (`element_id`, `S/N`, `brand`, `model`) VALUES ("+ element +", ?, ?, ?)";
+        	
+        	ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        	
+        	ps.setString(1, batch.getString("S/N"));
+        	ps.setString(2, batch.getString("brand"));
+        	ps.setString(3, batch.getString("model"));
+
+        	result = ps.executeUpdate();
+        	
+        	if (result == 1) {
+        		return JsonTreatment.sendResponseCode(200, element, "Se han añadido "+ result +" lineas a la base de datos");
+        	} else {
+        		return JsonTreatment.sendResponseCode(400, "Se han añadido "+ result +" lineas a la base de datos");
+        	}
+    		
+    	} else {
+    		return JsonTreatment.sendResponseCode(400, "Se han añadido "+ result +" lineas a la base de datos");
+    	}
+    	
+    }
+    
+    /*************************************************************************************/
+    
+    public JSONObject newSoftware(JSONObject batch) throws SQLException {
+
+    	String query = "INSERT INTO Element (`internal_name`, `element_type`) VALUES (?, 2)";
+    	
+    	ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+    	
+    	ps.setString(1, batch.getString("internal_name"));
+
+    	int result = ps.executeUpdate();
+    	
+    	if (result == 1) {
+    		
+    		ResultSet res = ps.getGeneratedKeys();
+    		res.next();
+    		int element = res.getInt(1);
+    		System.out.println("Se ha creado el elemento número "+ element);
+    		
+    		query = "INSERT INTO Hardware (`element_id`, `developer`, `version`) VALUES ("+ element +", ?, ?)";
+        	
+        	ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        	
+        	ps.setString(1, batch.getString("developer"));
+        	ps.setString(2, batch.getString("version"));
+
+        	result = ps.executeUpdate();
+        	
+        	if (result == 1) {
+        		return JsonTreatment.sendResponseCode(200, element, "Se han añadido "+ result +" lineas a la base de datos");
+        	} else {
+        		return JsonTreatment.sendResponseCode(400, "Se han añadido "+ result +" lineas a la base de datos");
+        	}
+    		
+    	} else {
+    		return JsonTreatment.sendResponseCode(400, "Se han añadido "+ result +" lineas a la base de datos");
+    	}
+    	
+    }
 
 }
