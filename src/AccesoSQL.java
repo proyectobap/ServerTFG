@@ -96,18 +96,22 @@ public class AccesoSQL {
     		
     		if (credentials[1].equals(rs.getString(3))) {
 
+    			int userId = rs.getInt(5);
+    			int loginId = rs.getInt(1);
+    			
     			query = "SELECT user_type FROM User WHERE user_id = ?";
-    			cli.setLoginId(rs.getInt(1));
+    			cli.setLoginId(loginId);
+    			cli.setUserId(userId);
     			
     			ps = con.prepareStatement(query);
-    			ps.setInt(1, rs.getInt(5));
+    			ps.setInt(1, userId);
     			
     			ResultSet resultSet = ps.executeQuery();
     			resultSet.next();
     			int permissionsId = resultSet.getInt(1);
     			resultSet.close();
 
-    			return JsonTreatment.sendResponseCode(200, permissionsId, "ok");
+    			return JsonTreatment.sendLoginCode(200, permissionsId, userId, loginId, "ok");
     			
     		}
     	}
@@ -316,9 +320,9 @@ public class AccesoSQL {
     
     /*************************************************************************************/
     
-    public JSONObject modifyUserPassword(JSONObject batch, int userId) throws SQLException {
+    public JSONObject modifyOwnUserPassword(JSONObject batch, int userId) throws SQLException {
 
-    	String query = "UPDATE Login SET shdw_passwd = ? WHERE  user_id = "+ userId;
+    	String query = "UPDATE Login SET shdw_passwd = ? WHERE  login_id = "+ userId;
     	
     	ps = con.prepareStatement(query);
     	
@@ -336,17 +340,37 @@ public class AccesoSQL {
     
     /*************************************************************************************/
     
+    public JSONObject modifyUserPassword(JSONObject batch) throws SQLException {
+
+    	String query = "UPDATE Login SET shdw_passwd = ? WHERE  user_id = ?";
+    	
+    	ps = con.prepareStatement(query);
+    	
+    	ps.setString(1, batch.getString("shdw_passwd"));
+    	ps.setInt(2, batch.getInt("user_id"));
+
+    	int result = ps.executeUpdate();
+    	
+    	if (result >= 1) {
+    		return JsonTreatment.sendResponseCode(200, "Se han modificado "+ result +" lineas");
+    	} else {
+    		return JsonTreatment.sendResponseCode(400, "Se han modificado "+ result +" lineas");
+    	}
+    	
+    }
+    
+    /*************************************************************************************/
+    
     public JSONObject modifyOwnUser(JSONObject batch, int userId) throws SQLException {
 
     	String query = 
-    		"UPDATE Login SET email = ?, name = ?, last_name = ?, user_type = ? WHERE user_id = ("
-    		+ "SELECT user_id FROM Login WHERE login_id = " + userId + ")";
+    		"UPDATE User SET `email` = ?, `name` = ?, `last_name` = ?, `user_type` = ? WHERE `user_id` = " + userId;
     	
     	ps = con.prepareStatement(query);
 
     	ps.setString(1, batch.getString("email"));
     	ps.setString(2, batch.getString("name"));
-        ps.setString(3, batch.getString("lastname"));
+        ps.setString(3, batch.getString("last_name"));
         ps.setInt(4, batch.getInt("user_type"));
 
     	int result = ps.executeUpdate();
@@ -364,13 +388,13 @@ public class AccesoSQL {
     public JSONObject modifyUser(JSONObject batch) throws SQLException {
 
     	String query = 
-    		"UPDATE Login SET email = ?, name = ?, last_name = ?, user_type = ? WHERE user_id = ?";
+    			"UPDATE User SET `email` = ?, `name` = ?, `last_name` = ?, `user_type` = ? WHERE user_id = ?";
     	
     	ps = con.prepareStatement(query);
 
     	ps.setString(1, batch.getString("email"));
     	ps.setString(2, batch.getString("name"));
-        ps.setString(3, batch.getString("lastname"));
+        ps.setString(3, batch.getString("last_name"));
         ps.setInt(4, batch.getInt("user_type"));
         ps.setInt(5, batch.getInt("user_id"));
 
@@ -576,7 +600,7 @@ public class AccesoSQL {
     public JSONObject modifyTicket(JSONObject batch) throws SQLException {
 
     	String query = 
-    		"UPDATE Ticket SET title = ?, desc = ?, ticket_status_id = ?, ticket_owner = ?, ticket_object = ? WHERE ticket_id = ?";
+    		"UPDATE `Ticket` SET `title` = ?, `desc` = ?, `ticket_status_id` = ?, `ticket_owner` = ?, `ticket_object` = ? WHERE `ticket_id` = ?";
     	
     	ps = con.prepareStatement(query);
 

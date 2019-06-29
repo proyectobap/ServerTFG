@@ -12,7 +12,7 @@ public class Server extends Thread {
 	@SuppressWarnings({ "resource" })
 	@Override
 	public void run() {
-		System.out.println("BACK-END SERVER 0.9 (23/06)");
+		System.out.println("BACK-END SERVER 0.9.3 (28/06)");
 		System.out.println("-------------------");
 		
 		try {

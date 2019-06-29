@@ -38,6 +38,7 @@ public class ClientListener implements Runnable {
     private String preguntaEnc;
     private String e = null;
     private int loginId;
+    private int userId;
     
     private JSONObject pregunta;
     
@@ -54,6 +55,10 @@ public class ClientListener implements Runnable {
     
     public void setLoginId(int id) {
     	this.loginId = id;
+    }
+    
+    public void setUserId(int id) {
+    	this.userId = id;
     }
     
     public ClientListener(Socket cliente) {
@@ -228,7 +233,7 @@ public class ClientListener implements Runnable {
 					break;
 					
 				case "newlogin":
-					enviar(symetricEncrypt(acceso.newUser(pregunta)));
+					enviar(symetricEncrypt(acceso.newLogin(pregunta)));
 					Consola.info(hilo.getName() + " -> Asociar Login");
 					break;
 					
@@ -311,13 +316,18 @@ public class ClientListener implements Runnable {
 					
 				// Modificar registros					
 					
+				case "modifyownpassword":
+					enviar(symetricEncrypt(acceso.modifyOwnUserPassword(pregunta, loginId)));
+					Consola.info(hilo.getName() + " -> Modificación Contraseña propia");
+					break;
+					
 				case "modifypassword":
-					enviar(symetricEncrypt(acceso.modifyUserPassword(pregunta, loginId)));
+					enviar(symetricEncrypt(acceso.modifyUserPassword(pregunta)));
 					Consola.info(hilo.getName() + " -> Modificación Contraseña");
 					break;
 					
 				case "modifyownuser":
-					enviar(symetricEncrypt(acceso.modifyOwnUser(pregunta, loginId)));
+					enviar(symetricEncrypt(acceso.modifyOwnUser(pregunta, userId)));
 					Consola.info(hilo.getName() + " -> Modificación Usuario");
 					break;
 					
