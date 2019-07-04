@@ -1,4 +1,0 @@
-Response codes:
-
-200 - Simple information
-201 - Information that must be shown in the screen (Just for debug purposes)
